@@ -11,5 +11,4 @@
 
 export { default as WorkletNode } from './JsEvalWorkletNode'
 import _WorkletProcessorCode from './JsEvalWorkletProcessor.js'
-export * as constants from './constants'
 export const WorkletProcessorCode = _WorkletProcessorCode as string

@@ -11,14 +11,32 @@
 
 export default class JsEvalNode extends AudioWorkletNode {
     port: JsEvalNodeMessagePort
-    constructor(context: AudioContext, channelCount: number) {
-        super(context, 'js-eval-node', { numberOfOutputs: 1, outputChannelCount: [channelCount] })
+
+    /**
+     * @param globsVariableName  Name for the variable that will hold globals
+     * which can then be accessed by the evaled code.
+     */
+    constructor(
+        context: AudioContext,
+        channelCount: number,
+        globsVariableName: string
+    ) {
+        super(context, 'js-eval-node', {
+            numberOfOutputs: 1,
+            outputChannelCount: [channelCount],
+            processorOptions: {
+                globsVariableName,
+            },
+        })
     }
 }
 
 interface JsEvalNodeMessagePort extends MessagePort {
-    postMessage(message: JsEvalNodeMessage, transfer: Transferable[]): void;
-    postMessage(message: JsEvalNodeMessage, options?: StructuredSerializeOptions): void;
+    postMessage(message: JsEvalNodeMessage, transfer: Transferable[]): void
+    postMessage(
+        message: JsEvalNodeMessage,
+        options?: StructuredSerializeOptions
+    ): void
 }
 
 interface SetProcessorMessage {

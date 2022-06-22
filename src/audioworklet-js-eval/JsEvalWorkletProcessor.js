@@ -9,35 +9,37 @@
  *
  */
 
-const GLOBAL_ARRAYS_VARIABLE_NAME = 'GLOBAL_ARRAYS'
-
 class JsEvalWorkletProcessor extends AudioWorkletProcessor {
     constructor(settings) {
         super()
         this.port.onmessage = this.onMessage.bind(this)
-        const defaultOutput = new Float32Array(settings.channelCount)
-        this.dspLoop = () => defaultOutput
         this.settings = {
-            channelCount: settings.outputChannelCount[0]
+            channelCount: settings.outputChannelCount[0],
+            globsVariableName: settings.processorOptions.globsVariableName,
         }
+        this.dspLoop = null
+        this.dspConfigured = false
     }
 
     process(_, outputs) {
         const output = outputs[0]
-        const blockSize = output[0].length
-        for (let frame = 0; frame < blockSize; frame++) {
-            const dspLoopResult = this.dspLoop()
-            for (let channel = 0; channel < this.settings.channelCount; channel++) {
-                output[channel][frame] = dspLoopResult[channel]
+        if (!this.dspConfigured) {
+            if (!this.dspLoop) {
+                return true
             }
+            this.settings.blockSize = output[0].length
+            this.dspConfigure(this.settings.blockSize)
+            this.dspConfigured = true
         }
+        this.dspLoop(output)
         return true
     }
 
     onMessage(message) {
         switch (message.data.type) {
             case 'CODE':
-                globalThis[GLOBAL_ARRAYS_VARIABLE_NAME] = message.data.payload.arrays
+                globalThis[this.settings.globsVariableName] =
+                    message.data.payload.arrays
                 this.setDspCode(message.data.payload.code)
                 break
             case 'PORT':
@@ -52,7 +54,9 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setDspCode(code) {
-        const { loop, ports } = new Function(code)()
+        const { loop, ports, configure } = new Function(code)()
+        this.dspConfigured = false
+        this.dspConfigure = configure
         this.dspLoop = loop
         this.dspPorts = ports
     }

@@ -12,28 +12,32 @@
 class WasmWorkletProcessor extends AudioWorkletProcessor {
     constructor(settings) {
         super()
-        this.port.onmessage = this.onMessage.bind(this)        
+        this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
             blockSize: null,
-            channelCount: settings.outputChannelCount[0]
+            channelCount: settings.outputChannelCount[0],
+            // `WasmOutputType` arrives as a string because it needs to be passed
+            // between threads
+            WasmOutputType:
+                globalThis[settings.processorOptions.WasmOutputType],
         }
-        this.wasmInitialized = false
+        this.dspConfigured = false
         this.wasmModule = null
     }
 
     process(_, outputs) {
         const output = outputs[0]
-        if (!this.wasmInitialized) {
+        if (!this.dspConfigured) {
             if (!this.wasmModule) {
                 return true
             }
-            this.settings.blockSize = output[0].length,
-            this.wasmOutputPointer = this.wasmInit(this.settings.blockSize)
-            this.wasmInitialized = true
+            this.settings.blockSize = output[0].length
+            this.wasmOutputPointer = this.dspConfigure(this.settings.blockSize)
+            this.dspConfigured = true
         }
-        
-        this.wasmLoop()
-        for (let channel=0; channel < this.settings.channelCount; channel++) {
+
+        this.dspLoop()
+        for (let channel = 0; channel < this.settings.channelCount; channel++) {
             this.readChannel(channel, output[channel])
         }
         return true
@@ -51,43 +55,24 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setWasm(wasmBuffer) {
-        console.log('SETWASM', this.settings.channelCount)
-        WebAssembly.instantiate(wasmBuffer, {
-            env: {
-                // REF : Assemblyscript ESM bindings
-                abort(message, fileName, lineNumber, columnNumber) {
-                    message = liftString(message >>> 0)
-                    fileName = liftString(fileName >>> 0)
-                    lineNumber = lineNumber >>> 0
-                    columnNumber = columnNumber >>> 0
-                    (() => {
-                        throw Error(`${message} in ${fileName}:${lineNumber}:${columnNumber}`)
-                    })()
-                },
-                seed() {
-                    return (() => {
-                        return Date.now() * Math.random()
-                    })()
-                },
-                "console.log"(text) {
-                    console.log(text)
-                },
-            },
-        }).then(wasmModule => {
+        instantiateWasmModule(wasmBuffer).then((wasmModule) => {
             this.wasmModule = wasmModule
-            this.wasmInitialized = false
-            
-            this.wasmLoop = wasmModule.instance.exports.loop
             this.wasmModuleMemory = wasmModule.instance.exports.memory
-            this.wasmInit = wasmModule.instance.exports.init
+            this.dspConfigured = false
+            this.dspLoop = wasmModule.instance.exports.loop
+            this.dspConfigure = wasmModule.instance.exports.configure
         })
     }
 
     readChannel(channel, destination) {
-        const wasmOutput = liftTypedArray(this.wasmModuleMemory, this.wasmOutputPointer)
+        const wasmOutput = liftTypedArray(
+            this.settings.WasmOutputType,
+            this.wasmModuleMemory,
+            this.wasmOutputPointer
+        )
         destination.set(
             wasmOutput.subarray(
-                this.settings.blockSize * channel, 
+                this.settings.blockSize * channel,
                 this.settings.blockSize * (channel + 1)
             )
         )
@@ -95,26 +80,57 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 }
 
 // REF : Assemblyscript ESM bindings
-function liftTypedArray(memory, pointer) {
+const instantiateWasmModule = (wasmBuffer) => {
+    return WebAssembly.instantiate(wasmBuffer, {
+        env: {
+            abort(message, fileName, lineNumber, columnNumber) {
+                message = liftString(message >>> 0)
+                fileName = liftString(fileName >>> 0)
+                lineNumber = lineNumber >>> 0
+                columnNumber =
+                    columnNumber >>>
+                    0(() => {
+                        throw Error(
+                            `${message} in ${fileName}:${lineNumber}:${columnNumber}`
+                        )
+                    })()
+            },
+            seed() {
+                return (() => {
+                    return Date.now() * Math.random()
+                })()
+            },
+            'console.log'(text) {
+                console.log(text)
+            },
+        },
+    })
+}
+
+// REF : Assemblyscript ESM bindings
+const liftTypedArray = (TypedArrayConstructor, memory, pointer) => {
     pointer = pointer >>> 0
     const memoryU32 = new Uint32Array(memory.buffer)
-    const source = new Float32Array(
+    const source = new TypedArrayConstructor(
         memory.buffer,
-        memoryU32[pointer + 4 >>> 2],
-        memoryU32[pointer + 8 >>> 2] / Float32Array.BYTES_PER_ELEMENT
+        memoryU32[(pointer + 4) >>> 2],
+        memoryU32[(pointer + 8) >>> 2] / TypedArrayConstructor.BYTES_PER_ELEMENT
     )
     return source
 }
 
 // REF : Assemblyscript ESM bindings
-function liftString(pointer) {
-    if (!pointer) return null;
-    const end = pointer + new Uint32Array(memory.buffer)[pointer - 4 >>> 2] >>> 1
+const liftString = (pointer) => {
+    if (!pointer) return null
+    const end =
+        (pointer + new Uint32Array(memory.buffer)[(pointer - 4) >>> 2]) >>> 1
     const memoryU16 = new Uint16Array(memory.buffer)
     let start = pointer >>> 1
-    let string = ""
+    let string = ''
     while (end - start > 1024) {
-        string += String.fromCharCode(...memoryU16.subarray(start, start += 1024))
+        string += String.fromCharCode(
+            ...memoryU16.subarray(start, (start += 1024))
+        )
     }
     return string + String.fromCharCode(...memoryU16.subarray(start, end))
 }
