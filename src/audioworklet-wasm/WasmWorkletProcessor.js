@@ -9,6 +9,7 @@
  *
  */
 
+
 class WasmWorkletProcessor extends AudioWorkletProcessor {
     constructor(settings) {
         super()
@@ -16,27 +17,30 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.settings = {
             blockSize: null,
             channelCount: settings.outputChannelCount[0],
-            // `WasmOutputType` arrives as a string because it needs to be passed
-            // between threads
-            WasmOutputType:
-                globalThis[settings.processorOptions.WasmOutputType],
+            bitDepth:
+                settings.processorOptions.bitDepth,
+            sampleRate: 
+                settings.processorOptions.sampleRate,
         }
         this.dspConfigured = false
-        this.wasmModule = null
+        this.engine = null
     }
 
     process(_, outputs) {
         const output = outputs[0]
         if (!this.dspConfigured) {
-            if (!this.wasmModule) {
+            if (!this.engine) {
                 return true
             }
             this.settings.blockSize = output[0].length
-            this.wasmOutputPointer = this.dspConfigure(this.settings.blockSize)
+            this.wasmOutputPointer = this.engine.configure(
+                this.settings.sampleRate,
+                this.settings.blockSize,
+            )
             this.dspConfigured = true
         }
 
-        this.dspLoop()
+        this.engine.loop()
         for (let channel = 0; channel < this.settings.channelCount; channel++) {
             this.readChannel(channel, output[channel])
         }
@@ -54,21 +58,19 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         }
     }
 
+    // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
         instantiateWasmModule(wasmBuffer).then((wasmModule) => {
-            this.wasmModule = wasmModule
-            this.wasmModuleMemory = wasmModule.instance.exports.memory
+            this.engine = wasmModule.instance.exports
             this.dspConfigured = false
-            this.dspLoop = wasmModule.instance.exports.loop
-            this.dspConfigure = wasmModule.instance.exports.configure
         })
     }
 
     readChannel(channel, destination) {
         const wasmOutput = liftTypedArray(
-            this.settings.WasmOutputType,
-            this.wasmModuleMemory,
-            this.wasmOutputPointer
+            this.engine,
+            this.settings.bitDepth === 32 ? Float32Array : Float64Array,
+            this.wasmOutputPointer,
         )
         destination.set(
             wasmOutput.subarray(
@@ -80,8 +82,8 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 }
 
 // REF : Assemblyscript ESM bindings
-const instantiateWasmModule = (wasmBuffer) => {
-    return WebAssembly.instantiate(wasmBuffer, {
+const instantiateWasmModule = async (wasmBuffer) => {
+    const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
         env: {
             abort(message, fileName, lineNumber, columnNumber) {
                 message = liftString(message >>> 0)
@@ -101,26 +103,30 @@ const instantiateWasmModule = (wasmBuffer) => {
                 })()
             },
             'console.log'(text) {
-                console.log(text)
+                console.log(liftString(wasmModule.instance.exports.memory, text))
             },
         },
     })
+    return wasmModule
 }
 
 // REF : Assemblyscript ESM bindings
-const liftTypedArray = (TypedArrayConstructor, memory, pointer) => {
-    pointer = pointer >>> 0
-    const memoryU32 = new Uint32Array(memory.buffer)
-    const source = new TypedArrayConstructor(
-        memory.buffer,
+export const liftTypedArray = (
+    engine,
+    constructor,
+    pointer,
+) => {
+    if (!pointer) return null
+    const memoryU32 = new Uint32Array(engine.memory.buffer)
+    return new constructor(
+        engine.memory.buffer,
         memoryU32[(pointer + 4) >>> 2],
-        memoryU32[(pointer + 8) >>> 2] / TypedArrayConstructor.BYTES_PER_ELEMENT
-    )
-    return source
+        memoryU32[(pointer + 8) >>> 2] / constructor.BYTES_PER_ELEMENT
+    ).slice()
 }
 
 // REF : Assemblyscript ESM bindings
-const liftString = (pointer) => {
+const liftString = (memory, pointer) => {
     if (!pointer) return null
     const end =
         (pointer + new Uint32Array(memory.buffer)[(pointer - 4) >>> 2]) >>> 1

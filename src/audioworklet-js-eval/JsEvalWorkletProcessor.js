@@ -15,7 +15,6 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
         this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
             channelCount: settings.outputChannelCount[0],
-            globsVariableName: settings.processorOptions.globsVariableName,
         }
         this.dspLoop = null
         this.dspConfigured = false
@@ -38,9 +37,10 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
     onMessage(message) {
         switch (message.data.type) {
             case 'CODE':
-                globalThis[this.settings.globsVariableName] =
-                    message.data.payload.arrays
                 this.setDspCode(message.data.payload.code)
+                Object.entries(message.data.payload.arrays).forEach(([arrayName, array]) => {
+                    this.dspSetArray(arrayName, array)
+                })
                 break
             case 'PORT':
                 this.callPort(
@@ -54,11 +54,12 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setDspCode(code) {
-        const { loop, ports, configure } = new Function(code)()
+        const { loop, ports, configure, setArray } = new Function(code)()
         this.dspConfigured = false
         this.dspConfigure = configure
         this.dspLoop = loop
         this.dspPorts = ports
+        this.dspSetArray = setArray
     }
 
     callPort(portName, args) {

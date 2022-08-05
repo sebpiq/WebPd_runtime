@@ -12,21 +12,14 @@
 export default class JsEvalNode extends AudioWorkletNode {
     port: JsEvalNodeMessagePort
 
-    /**
-     * @param globsVariableName  Name for the variable that will hold globals
-     * which can then be accessed by the evaled code.
-     */
     constructor(
         context: AudioContext,
         channelCount: number,
-        globsVariableName: string
     ) {
         super(context, 'js-eval-node', {
             numberOfOutputs: 1,
             outputChannelCount: [channelCount],
-            processorOptions: {
-                globsVariableName,
-            },
+            processorOptions: {},
         })
     }
 }
