@@ -59,7 +59,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        instantiateWasmModule(wasmBuffer).then((wasmModule) => {
+        AscWasmBindings.instantiateWasmModule(wasmBuffer).then((wasmModule) => {
             this.engine = wasmModule.instance.exports
             this.dspConfigured = false
         })
@@ -78,35 +78,6 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             )
         )
     }
-}
-
-// REF : Assemblyscript ESM bindings
-const instantiateWasmModule = async (wasmBuffer) => {
-    const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
-        env: {
-            abort(message, fileName, lineNumber, columnNumber) {
-                message = AscWasmBindings.liftString(wasmModule.instance.exports, message >>> 0)
-                fileName = AscWasmBindings.liftString(wasmModule.instance.exports, fileName >>> 0)
-                lineNumber = lineNumber >>> 0
-                columnNumber =
-                    columnNumber >>>
-                    0(() => {
-                        throw Error(
-                            `${message} in ${fileName}:${lineNumber}:${columnNumber}`
-                        )
-                    })()
-            },
-            seed() {
-                return (() => {
-                    return Date.now() * Math.random()
-                })()
-            },
-            'console.log'(text) {
-                console.log(AscWasmBindings.liftString(wasmModule.instance.exports, text))
-            },
-        },
-    })
-    return wasmModule
 }
 
 registerProcessor('wasm-node', WasmWorkletProcessor)
