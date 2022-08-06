@@ -9,7 +9,6 @@
  *
  */
 
-
 class WasmWorkletProcessor extends AudioWorkletProcessor {
     constructor(settings) {
         super()
@@ -67,7 +66,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     readChannel(channel, destination) {
-        const wasmOutput = liftTypedArray(
+        const wasmOutput = AscWasmBindings.liftTypedArray(
             this.engine,
             this.settings.bitDepth === 32 ? Float32Array : Float64Array,
             this.wasmOutputPointer,
@@ -86,8 +85,8 @@ const instantiateWasmModule = async (wasmBuffer) => {
     const wasmModule = await WebAssembly.instantiate(wasmBuffer, {
         env: {
             abort(message, fileName, lineNumber, columnNumber) {
-                message = liftString(message >>> 0)
-                fileName = liftString(fileName >>> 0)
+                message = AscWasmBindings.liftString(wasmModule.instance.exports, message >>> 0)
+                fileName = AscWasmBindings.liftString(wasmModule.instance.exports, fileName >>> 0)
                 lineNumber = lineNumber >>> 0
                 columnNumber =
                     columnNumber >>>
@@ -103,42 +102,11 @@ const instantiateWasmModule = async (wasmBuffer) => {
                 })()
             },
             'console.log'(text) {
-                console.log(liftString(wasmModule.instance.exports.memory, text))
+                console.log(AscWasmBindings.liftString(wasmModule.instance.exports, text))
             },
         },
     })
     return wasmModule
-}
-
-// REF : Assemblyscript ESM bindings
-export const liftTypedArray = (
-    engine,
-    constructor,
-    pointer,
-) => {
-    if (!pointer) return null
-    const memoryU32 = new Uint32Array(engine.memory.buffer)
-    return new constructor(
-        engine.memory.buffer,
-        memoryU32[(pointer + 4) >>> 2],
-        memoryU32[(pointer + 8) >>> 2] / constructor.BYTES_PER_ELEMENT
-    ).slice()
-}
-
-// REF : Assemblyscript ESM bindings
-const liftString = (memory, pointer) => {
-    if (!pointer) return null
-    const end =
-        (pointer + new Uint32Array(memory.buffer)[(pointer - 4) >>> 2]) >>> 1
-    const memoryU16 = new Uint16Array(memory.buffer)
-    let start = pointer >>> 1
-    let string = ''
-    while (end - start > 1024) {
-        string += String.fromCharCode(
-            ...memoryU16.subarray(start, (start += 1024))
-        )
-    }
-    return string + String.fromCharCode(...memoryU16.subarray(start, end))
 }
 
 registerProcessor('wasm-node', WasmWorkletProcessor)

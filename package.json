@@ -2,11 +2,12 @@
   "name": "@webpd/audioworklets",
   "version": "0.1.0",
   "description": "TODO",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/shared/configs/jest.js",
-    "rollup": "npx rollup --config node_modules/@webpd/shared/configs/rollup.ts --configPlugin typescript",
+    "rollup": "npx rollup --config node_modules/@webpd/shared/configs/rollup.mjs",
     "prettier": "npm explore @webpd/shared -- npm run prettier $(pwd)/src",
     "eslint": "npm explore @webpd/shared -- npm run eslint $(pwd)/src",
     "all": "npm run test-bail && npm run prettier && npm run eslint"
@@ -21,8 +22,11 @@
     "url": "https://github.com/sebpiq/WebPd_dsp-graph/issues"
   },
   "homepage": "https://github.com/sebpiq/WebPd_dsp-graph#readme",
+  "dependencies": {
+    "@webpd/compiler-js": "file:../WebPd_compiler-js"
+  },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^8.3.2",
+    "@rollup/plugin-typescript": "^8.3.4",
     "@webpd/shared": "file:../WebPd_shared",
     "rollup": "^2.74.1",
     "rollup-plugin-dts": "^4.2.1",
