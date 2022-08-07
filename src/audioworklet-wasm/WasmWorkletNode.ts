@@ -39,7 +39,7 @@ interface SetProcessorMessage {
     type: 'WASM'
     payload: {
         wasmBuffer: ArrayBuffer
-        arrays: { [arrayName: string]: Float32Array }
+        arrays: { [arrayName: string]: Float32Array | Float64Array }
     }
 }
 

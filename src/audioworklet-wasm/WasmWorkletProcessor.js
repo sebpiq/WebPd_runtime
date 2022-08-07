@@ -49,8 +49,8 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     onMessage(message) {
         switch (message.data.type) {
             case 'WASM':
-                // globalThis[GLOBAL_ARRAYS_VARIABLE_NAME] = message.data.payload.arrays
                 this.setWasm(message.data.payload.wasmBuffer)
+                    .then(() => this.setArrays(message.data.payload.arrays))
                 break
             default:
                 new Error(`unknown message type ${message.type}`)
@@ -59,9 +59,20 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        AscWasmBindings.instantiateWasmModule(wasmBuffer).then((wasmModule) => {
+        return AscWasmBindings.instantiateWasmModule(wasmBuffer).then((wasmModule) => {
             this.engine = wasmModule.instance.exports
             this.dspConfigured = false
+        })
+    }
+
+    setArrays(arrays) {
+        Object.entries(arrays).forEach(([arrayName, arrayData]) => {
+            if ((this.settings.bitDepth === 32 && arrayData.constructor !== Float32Array) 
+                || (this.settings.bitDepth === 64 && arrayData.constructor !== Float64Array)) {
+                console.error(`Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.bitDepth}`)
+                return
+            }
+            AscWasmBindings.setArray(this.engine, arrayName, arrayData)
         })
     }
 
