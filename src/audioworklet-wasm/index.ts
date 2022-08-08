@@ -11,6 +11,6 @@
 
 export { default as WorkletNode } from './WasmWorkletNode'
 import _WorkletProcessorCode from './WasmWorkletProcessor.js'
-import AcmWasmBindingsCode from '../../node_modules/@webpd/compiler-js/dist/asc-wasm-bindings.iife.js'
+import AcmWasmBindingsCode from '../../node_modules/@webpd/compiler-js/dist/assemblyscript-wasm-bindings.iife.js'
 // Concatenate WorkletProcessor code with the Wasm bindings it needs
 export const WorkletProcessorCode = AcmWasmBindingsCode + ';\n' + _WorkletProcessorCode

@@ -39,9 +39,14 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             this.dspConfigured = true
         }
 
-        this.engine.loop()
+        const wasmOutput = this.engine.loop()
         for (let channel = 0; channel < this.settings.channelCount; channel++) {
-            this.readChannel(channel, output[channel])
+            output[channel].set(
+                wasmOutput.subarray(
+                    this.settings.blockSize * channel,
+                    this.settings.blockSize * (channel + 1)
+                )
+            )
         }
         return true
     }
@@ -59,9 +64,12 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        return AscWasmBindings.instantiateWasmModule(wasmBuffer).then((wasmModule) => {
-            this.engine = wasmModule.instance.exports
+        return AscWasmBindings.createEngine(wasmBuffer, {
+            bitDepth: this.settings.bitDepth,
+            portSpecs: {},
+        }).then(engine => {
             this.dspConfigured = false
+            this.engine = engine
         })
     }
 
@@ -72,22 +80,8 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 console.error(`Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.bitDepth}`)
                 return
             }
-            AscWasmBindings.setArray(this.engine, arrayName, arrayData)
+            this.engine.setArray(arrayName, arrayData)
         })
-    }
-
-    readChannel(channel, destination) {
-        const wasmOutput = AscWasmBindings.liftTypedArray(
-            this.engine,
-            this.settings.bitDepth === 32 ? Float32Array : Float64Array,
-            this.wasmOutputPointer,
-        )
-        destination.set(
-            wasmOutput.subarray(
-                this.settings.blockSize * channel,
-                this.settings.blockSize * (channel + 1)
-            )
-        )
     }
 }
 

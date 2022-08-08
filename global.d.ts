@@ -6,7 +6,7 @@ declare module '*WorkletProcessor.js' {
     export default content
 }
 
-declare module '*/node_modules/@webpd/compiler-js/dist/asc-wasm-bindings.iife.js' {
+declare module '*/node_modules/@webpd/compiler-js/dist/assemblyscript-wasm-bindings.iife.js' {
     const content: string
     export default content
 }
