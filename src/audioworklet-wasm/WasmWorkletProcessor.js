@@ -64,7 +64,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        return AscWasmBindings.createEngine(wasmBuffer, {
+        return AssemblyscriptWasmBindings.createEngine(wasmBuffer, {
             bitDepth: this.settings.bitDepth,
             portSpecs: {},
         }).then(engine => {

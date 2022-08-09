@@ -19,7 +19,9 @@ export default class JsEvalNode extends AudioWorkletNode {
         super(context, 'js-eval-node', {
             numberOfOutputs: 1,
             outputChannelCount: [channelCount],
-            processorOptions: {},
+            processorOptions: {
+                sampleRate: context.sampleRate
+            },
         })
     }
 }

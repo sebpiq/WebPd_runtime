@@ -15,32 +15,34 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
         this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
             channelCount: settings.outputChannelCount[0],
+            sampleRate: 
+                settings.processorOptions.sampleRate,
         }
-        this.dspLoop = null
         this.dspConfigured = false
     }
 
     process(_, outputs) {
         const output = outputs[0]
         if (!this.dspConfigured) {
-            if (!this.dspLoop) {
+            if (!this.engine) {
                 return true
             }
             this.settings.blockSize = output[0].length
-            this.dspConfigure(this.settings.blockSize)
+            this.engine.configure(
+                this.settings.sampleRate,
+                this.settings.blockSize,
+            )
             this.dspConfigured = true
         }
-        this.dspLoop(output)
+        this.engine.loop(output)
         return true
     }
 
     onMessage(message) {
         switch (message.data.type) {
             case 'CODE':
-                this.setDspCode(message.data.payload.code)
-                Object.entries(message.data.payload.arrays).forEach(([arrayName, array]) => {
-                    this.dspSetArray(arrayName, array)
-                })
+                this.setCode(message.data.payload.code)
+                this.setArrays(message.data.payload.arrays)
                 break
             case 'PORT':
                 this.callPort(
@@ -53,20 +55,22 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
         }
     }
 
-    setDspCode(code) {
-        const { loop, ports, configure, setArray } = new Function(code)()
+    setCode(code) {
+        this.engine = new Function(code)()
         this.dspConfigured = false
-        this.dspConfigure = configure
-        this.dspLoop = loop
-        this.dspPorts = ports
-        this.dspSetArray = setArray
+    }
+
+    setArrays(arrays) {
+        Object.entries(arrays).forEach(([arrayName, array]) => {
+            this.engine.setArray(arrayName, array)
+        })
     }
 
     callPort(portName, args) {
-        if (!this.dspPorts[portName]) {
+        if (!this.engine || !this.engine.ports[portName]) {
             throw new Error(`Unknown port ${portName}`)
         }
-        this.dspPorts[portName].apply(this, args)
+        this.engine.ports[portName].apply(this, args)
     }
 }
 

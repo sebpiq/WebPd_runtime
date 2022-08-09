@@ -4,7 +4,7 @@
   "description": "TODO",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/shared/configs/jest.js",
     "rollup": "npx rollup --config rollup.mjs",
