@@ -44,12 +44,6 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
                 this.setCode(message.data.payload.code)
                 this.setArrays(message.data.payload.arrays)
                 break
-            case 'PORT':
-                this.callPort(
-                    message.data.payload.portName,
-                    message.data.payload.args
-                )
-                break
             default:
                 new Error(`unknown message type ${message.type}`)
         }
@@ -64,13 +58,6 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
         Object.entries(arrays).forEach(([arrayName, array]) => {
             this.engine.setArray(arrayName, array)
         })
-    }
-
-    callPort(portName, args) {
-        if (!this.engine || !this.engine.ports[portName]) {
-            throw new Error(`Unknown port ${portName}`)
-        }
-        this.engine.ports[portName].apply(this, args)
     }
 }
 

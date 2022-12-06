@@ -42,12 +42,4 @@ interface SetProcessorMessage {
     }
 }
 
-interface CallPortMessage {
-    type: 'PORT'
-    payload: {
-        portName: string
-        args: Array<any>
-    }
-}
-
-type JsEvalNodeMessage = SetProcessorMessage | CallPortMessage
+type JsEvalNodeMessage = SetProcessorMessage
