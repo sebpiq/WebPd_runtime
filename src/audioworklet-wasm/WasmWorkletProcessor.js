@@ -39,15 +39,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             this.dspConfigured = true
         }
 
-        const wasmOutput = this.engine.loop()
-        for (let channel = 0; channel < this.settings.channelCount; channel++) {
-            output[channel].set(
-                wasmOutput.subarray(
-                    this.settings.blockSize * channel,
-                    this.settings.blockSize * (channel + 1)
-                )
-            )
-        }
+        this.engine.loop(output)
         return true
     }
 
