@@ -1,3 +1,4 @@
 dist
 tsconfig-generated-for-rollup.json
 node_modules
+rollup-stats.html

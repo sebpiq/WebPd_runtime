@@ -23,11 +23,10 @@
   },
   "homepage": "https://github.com/sebpiq/WebPd_dsp-graph#readme",
   "devDependencies": {
-    "@rollup/plugin-typescript": "^8.3.4",
+    "@rollup/plugin-typescript": "^10.0.1",
     "@webpd/compiler-js": "file:../WebPd_compiler-js",
     "@webpd/dev": "file:../WebPd_dev",
-    "rollup": "^2.74.1",
-    "rollup-plugin-dts": "^4.2.1",
+    "rollup": "^3.7.0",
     "rollup-plugin-string": "^3.0.0",
     "tslib": "^2.4.0"
   }
