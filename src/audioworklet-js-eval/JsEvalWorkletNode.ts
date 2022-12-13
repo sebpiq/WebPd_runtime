@@ -10,15 +10,13 @@
  */
 
 export default class JsEvalNode extends AudioWorkletNode {
-    port: JsEvalNodeMessagePort
+    override port: JsEvalNodeMessagePort
 
     constructor(
         context: AudioContext,
-        channelCount: number,
     ) {
         super(context, 'js-eval-node', {
             numberOfOutputs: 1,
-            outputChannelCount: [channelCount],
             processorOptions: {
                 sampleRate: context.sampleRate
             },

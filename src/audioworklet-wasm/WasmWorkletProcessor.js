@@ -15,7 +15,6 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
             blockSize: null,
-            channelCount: settings.outputChannelCount[0],
             bitDepth:
                 settings.processorOptions.bitDepth,
             sampleRate: 
@@ -25,21 +24,22 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.engine = null
     }
 
-    process(_, outputs) {
+    process(inputs, outputs) {
         const output = outputs[0]
+        const input = inputs[0]
         if (!this.dspConfigured) {
             if (!this.engine) {
                 return true
             }
             this.settings.blockSize = output[0].length
-            this.wasmOutputPointer = this.engine.configure(
+            this.engine.configure(
                 this.settings.sampleRate,
                 this.settings.blockSize,
             )
             this.dspConfigured = true
         }
 
-        this.engine.loop(output)
+        this.engine.loop(input, output)
         return true
     }
 

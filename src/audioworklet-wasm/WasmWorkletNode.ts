@@ -10,16 +10,14 @@
  */
 
 export default class WasmWorkletNode extends AudioWorkletNode {
-    port: WasmWorkletNodeMessagePort
+    override port: WasmWorkletNodeMessagePort
 
     constructor(
         context: AudioContext,
-        channelCount: number,
         bitDepth: 32 | 64 = 32,
     ) {
         super(context, 'wasm-node', {
             numberOfOutputs: 1,
-            outputChannelCount: [channelCount],
             processorOptions: {
                 bitDepth, sampleRate: context.sampleRate
             },

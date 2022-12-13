@@ -14,15 +14,15 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
         super()
         this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
-            channelCount: settings.outputChannelCount[0],
             sampleRate: 
                 settings.processorOptions.sampleRate,
         }
         this.dspConfigured = false
     }
 
-    process(_, outputs) {
+    process(inputs, outputs) {
         const output = outputs[0]
+        const input = inputs[0]
         if (!this.dspConfigured) {
             if (!this.engine) {
                 return true
@@ -34,7 +34,7 @@ class JsEvalWorkletProcessor extends AudioWorkletProcessor {
             )
             this.dspConfigured = true
         }
-        this.engine.loop(output)
+        this.engine.loop(input, output)
         return true
     }
 
