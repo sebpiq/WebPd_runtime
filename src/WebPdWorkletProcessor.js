@@ -107,4 +107,4 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('wasm-node', WasmWorkletProcessor)
+registerProcessor('webpd-node', WasmWorkletProcessor)

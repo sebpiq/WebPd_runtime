@@ -9,13 +9,13 @@
  *
  */
 
-export default class WasmWorkletNode extends AudioWorkletNode {
-    override port: WasmWorkletNodeMessagePort
+export default class WebPdWorkletNode extends AudioWorkletNode {
+    override port: WebPdWorkletNodeMessagePort
 
     constructor(
         context: AudioContext,
     ) {
-        super(context, 'wasm-node', {
+        super(context, 'webpd-node', {
             numberOfOutputs: 1,
             processorOptions: {
                 sampleRate: context.sampleRate
@@ -24,10 +24,10 @@ export default class WasmWorkletNode extends AudioWorkletNode {
     }
 }
 
-interface WasmWorkletNodeMessagePort extends MessagePort {
-    postMessage(message: WasmWorkletNodeMessage, transfer: Transferable[]): void
+interface WebPdWorkletNodeMessagePort extends MessagePort {
+    postMessage(message: WebPdWorkletNodeMessage, transfer: Transferable[]): void
     postMessage(
-        message: WasmWorkletNodeMessage,
+        message: WebPdWorkletNodeMessage,
         options?: StructuredSerializeOptions
     ): void
 }
@@ -48,4 +48,4 @@ interface SetJsMessage {
     }
 }
 
-type WasmWorkletNodeMessage = SetWasmMessage | SetJsMessage
+type WebPdWorkletNodeMessage = SetWasmMessage | SetJsMessage
