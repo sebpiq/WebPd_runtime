@@ -1,1 +1,2 @@
-export { addWebPdWorkletNode, WebPdWorkletNode } from './src'
+export { registerWebPdWorkletNode, WebPdWorkletNode } from './src'
+export { default as fsWeb } from './src/fs-web'

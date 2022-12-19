@@ -15,10 +15,8 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
             blockSize: null,
-            bitDepth:
-                settings.processorOptions.bitDepth,
-            sampleRate: 
-                settings.processorOptions.sampleRate,
+            bitDepth: settings.processorOptions.bitDepth,
+            sampleRate: settings.processorOptions.sampleRate,
         }
         this.dspConfigured = false
         this.engine = null
@@ -34,7 +32,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             this.settings.blockSize = output[0].length
             this.engine.configure(
                 this.settings.sampleRate,
-                this.settings.blockSize,
+                this.settings.blockSize
             )
             this.dspConfigured = true
         }
@@ -45,16 +43,20 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     onMessage(message) {
         switch (message.data.type) {
-            case 'WASM':
-                this.setWasm(message.data.payload.wasmBuffer)
-                    .then(() => this.setArrays(message.data.payload.arrays))
+            case 'CODE:WASM':
+                this.setWasm(message.data.payload.wasmBuffer).then(() =>
+                    this.setArrays(message.data.payload.arrays)
+                )
                 break
-            case 'JS':
+            case 'CODE:JS':
                 this.setJs(message.data.payload.jsCode)
                 this.setArrays(message.data.payload.arrays)
                 break
             case 'FS:READ_SOUND_FILE_RESPONSE':
-                this.fsReadSoundFileReponse(message.data.payload.operationId, message.data.payload.sound)
+                this.fsReadSoundFileReponse(
+                    message.data.payload.operationId,
+                    message.data.payload.sound
+                )
                 break
             default:
                 new Error(`unknown message type ${message.type}`)
@@ -71,15 +73,14 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                         payload: {
                             operationId,
                             url,
-                        }
+                        },
                     })
-                }
-            }
+                },
+            },
+        }).then((engine) => {
+            this.engine = engine
+            this.dspConfigured = false
         })
-            .then(engine => {
-                this.engine = engine
-                this.dspConfigured = false
-            })
     }
 
     setCode(code) {
@@ -89,9 +90,15 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     setArrays(arrays) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
-            if ((this.settings.bitDepth === 32 && arrayData.constructor !== Float32Array) 
-                || (this.settings.bitDepth === 64 && arrayData.constructor !== Float64Array)) {
-                console.error(`Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.bitDepth}`)
+            if (
+                (this.settings.bitDepth === 32 &&
+                    arrayData.constructor !== Float32Array) ||
+                (this.settings.bitDepth === 64 &&
+                    arrayData.constructor !== Float64Array)
+            ) {
+                console.error(
+                    `Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.bitDepth}`
+                )
                 return
             }
             this.engine.setArray(arrayName, arrayData)
@@ -99,7 +106,6 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     fsReadSoundFileReponse(operationId, sound) {
-        console.log('WORKLET : fsReadSoundFileReponse', operationId, sound)
         if (!this.engine) {
             return
         }

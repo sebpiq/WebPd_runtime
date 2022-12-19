@@ -12,28 +12,27 @@
 export default class WebPdWorkletNode extends AudioWorkletNode {
     override port: WebPdWorkletNodeMessagePort
 
-    constructor(
-        context: AudioContext,
-    ) {
+    constructor(context: AudioContext) {
         super(context, 'webpd-node', {
             numberOfOutputs: 1,
             processorOptions: {
-                sampleRate: context.sampleRate
+                sampleRate: context.sampleRate,
             },
         })
     }
 }
 
 interface WebPdWorkletNodeMessagePort extends MessagePort {
-    postMessage(message: WebPdWorkletNodeMessage, transfer: Transferable[]): void
+    postMessage(message: OutgoingMessage, transfer: Transferable[]): void
     postMessage(
-        message: WebPdWorkletNodeMessage,
+        message: OutgoingMessage,
         options?: StructuredSerializeOptions
     ): void
+    onmessage(messageEvent: MessageEvent<IncomingMessage>): void
 }
 
 interface SetWasmMessage {
-    type: 'WASM'
+    type: 'CODE:WASM'
     payload: {
         wasmBuffer: ArrayBuffer
         arrays: { [arrayName: string]: Float32Array | Float64Array }
@@ -41,11 +40,29 @@ interface SetWasmMessage {
 }
 
 interface SetJsMessage {
-    type: 'JS'
+    type: 'CODE:JS'
     payload: {
         jsCode: string
         arrays: { [arrayName: string]: Float32Array | Float64Array }
     }
 }
 
-type WebPdWorkletNodeMessage = SetWasmMessage | SetJsMessage
+interface FsReadSoundFileResponse {
+    type: 'FS:READ_SOUND_FILE_RESPONSE'
+    payload: {
+        operationId: number
+        sound: Array<Float32Array | Float64Array>
+    }
+}
+
+type OutgoingMessage = SetWasmMessage | SetJsMessage | FsReadSoundFileResponse
+
+interface FsRequestReadSoundFile {
+    type: 'FS:REQUEST_READ_SOUND_FILE'
+    payload: {
+        operationId: number
+        url: string
+    }
+}
+
+export type IncomingMessage = FsRequestReadSoundFile

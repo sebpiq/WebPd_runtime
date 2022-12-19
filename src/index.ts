@@ -14,8 +14,9 @@ import _WebPdWorkletProcessorCode from './WebPdWorkletProcessor.js'
 import AssemblyscriptWasmBindingsCode from '../node_modules/@webpd/compiler-js/dist/assemblyscript-wasm-bindings.iife.js'
 import { addModule } from './utils'
 // Concatenate WorkletProcessor code with the Wasm bindings it needs
-export const WebPdWorkletProcessorCode = AssemblyscriptWasmBindingsCode + ';\n' + _WebPdWorkletProcessorCode
+export const WebPdWorkletProcessorCode =
+    AssemblyscriptWasmBindingsCode + ';\n' + _WebPdWorkletProcessorCode
 
-export const addWebPdWorkletNode = (context: AudioContext) => {
+export const registerWebPdWorkletNode = (context: AudioContext) => {
     return addModule(context, WebPdWorkletProcessorCode)
 }
