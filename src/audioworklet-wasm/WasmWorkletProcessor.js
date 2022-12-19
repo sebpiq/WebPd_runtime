@@ -49,21 +49,42 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.setWasm(message.data.payload.wasmBuffer)
                     .then(() => this.setArrays(message.data.payload.arrays))
                 break
+            case 'JS':
+                this.setJs(message.data.payload.jsCode)
+                this.setArrays(message.data.payload.arrays)
+                break
+            case 'FS:READ_SOUND_FILE_RESPONSE':
+                this.fsReadSoundFileReponse(message.data.payload.operationId, message.data.payload.sound)
+                break
             default:
                 new Error(`unknown message type ${message.type}`)
         }
     }
 
     // TODO : control for channelCount of wasmModule
-    // TODO : settings changed, no need for bit depth, portspecs, etc ... anymore
     setWasm(wasmBuffer) {
         return AssemblyscriptWasmBindings.createEngine(wasmBuffer, {
-            bitDepth: this.settings.bitDepth,
-            portSpecs: {},
-        }).then(engine => {
-            this.dspConfigured = false
-            this.engine = engine
+            fsListenersCallbacks: {
+                readSound: (operationId, url) => {
+                    this.port.postMessage({
+                        type: 'FS:REQUEST_READ_SOUND_FILE',
+                        payload: {
+                            operationId,
+                            url,
+                        }
+                    })
+                }
+            }
         })
+            .then(engine => {
+                this.engine = engine
+                this.dspConfigured = false
+            })
+    }
+
+    setCode(code) {
+        this.engine = new Function(code)()
+        this.dspConfigured = false
     }
 
     setArrays(arrays) {
@@ -75,6 +96,14 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             }
             this.engine.setArray(arrayName, arrayData)
         })
+    }
+
+    fsReadSoundFileReponse(operationId, sound) {
+        console.log('WORKLET : fsReadSoundFileReponse', operationId, sound)
+        if (!this.engine) {
+            return
+        }
+        this.engine.fs(operationId, sound)
     }
 }
 

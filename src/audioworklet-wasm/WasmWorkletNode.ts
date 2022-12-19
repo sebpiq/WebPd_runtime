@@ -14,12 +14,11 @@ export default class WasmWorkletNode extends AudioWorkletNode {
 
     constructor(
         context: AudioContext,
-        bitDepth: 32 | 64 = 32,
     ) {
         super(context, 'wasm-node', {
             numberOfOutputs: 1,
             processorOptions: {
-                bitDepth, sampleRate: context.sampleRate
+                sampleRate: context.sampleRate
             },
         })
     }
@@ -33,7 +32,7 @@ interface WasmWorkletNodeMessagePort extends MessagePort {
     ): void
 }
 
-interface SetProcessorMessage {
+interface SetWasmMessage {
     type: 'WASM'
     payload: {
         wasmBuffer: ArrayBuffer
@@ -41,4 +40,12 @@ interface SetProcessorMessage {
     }
 }
 
-type WasmWorkletNodeMessage = SetProcessorMessage
+interface SetJsMessage {
+    type: 'JS'
+    payload: {
+        jsCode: string
+        arrays: { [arrayName: string]: Float32Array | Float64Array }
+    }
+}
+
+type WasmWorkletNodeMessage = SetWasmMessage | SetJsMessage
