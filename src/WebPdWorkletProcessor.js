@@ -43,20 +43,18 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     onMessage(message) {
         switch (message.data.type) {
-            case 'CODE:WASM':
+            case 'code:WASM':
                 this.setWasm(message.data.payload.wasmBuffer).then(() =>
                     this.setArrays(message.data.payload.arrays)
                 )
                 break
-            case 'CODE:JS':
+            case 'code:JS':
                 this.setJs(message.data.payload.jsCode)
                 this.setArrays(message.data.payload.arrays)
                 break
-            case 'FS:READ_SOUND_FILE_RESPONSE':
-                this.fsReadSoundFileReponse(
-                    message.data.payload.operationId,
-                    message.data.payload.sound
-                )
+            case 'fs':
+                message.data.payload.functionName
+                this.engine.fs[message.data.payload.functionName](...message.data.payload.arguments)
                 break
             default:
                 new Error(`unknown message type ${message.type}`)
@@ -65,18 +63,19 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        return AssemblyscriptWasmBindings.createEngine(wasmBuffer, {
-            fsListenersCallbacks: {
-                readSound: (operationId, url) => {
+        const fsCallbacks = ['readSound'].reduce((callbacks, functionName) => {
+                callbacks[functionName] = (...args) => {
                     this.port.postMessage({
-                        type: 'FS:REQUEST_READ_SOUND_FILE',
+                        type: 'fs',
                         payload: {
-                            operationId,
-                            url,
-                        },
+                            functionName,
+                            arguments: args,                        },
                     })
-                },
-            },
+                }
+                return callbacks
+            }, {})
+        return AssemblyscriptWasmBindings.createEngine(wasmBuffer, {
+            fsCallbacks,
         }).then((engine) => {
             this.engine = engine
             this.dspConfigured = false
@@ -103,13 +102,6 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             }
             this.engine.setArray(arrayName, arrayData)
         })
-    }
-
-    fsReadSoundFileReponse(operationId, sound) {
-        if (!this.engine) {
-            return
-        }
-        this.engine.fs(operationId, sound)
     }
 }
 

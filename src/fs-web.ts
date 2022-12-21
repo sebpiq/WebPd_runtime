@@ -1,3 +1,4 @@
+import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler-js'
 import { loadAudioBuffer } from './utils'
 import WebPdWorkletNode, { IncomingMessage } from './WebPdWorkletNode'
 
@@ -6,23 +7,44 @@ const fsWeb = (
     message: MessageEvent<IncomingMessage>
 ) => {
     const { payload, type } = message.data
-    switch (type) {
-        case 'FS:REQUEST_READ_SOUND_FILE':
-            loadAudioBuffer(payload.url, node.context).then((audioBuffer) => {
-                node.port.postMessage({
-                    type: 'FS:READ_SOUND_FILE_RESPONSE',
-                    payload: {
-                        sound: [
-                            audioBuffer.getChannelData(0),
-                            audioBuffer.getChannelData(1),
-                        ],
-                        operationId: payload.operationId,
-                    },
+    if (type !== 'fs') {
+        throw new Error(`Unknown message type from node ${type}`)
+    }
+    switch (payload.functionName) {
+        case 'readSound':
+            const [operationId, url] = payload.arguments
+            loadAudioBuffer(url, node.context)
+                .then((audioBuffer) => {
+                    node.port.postMessage({
+                        type: 'fs',
+                        payload: {
+                            functionName: 'readSoundFileResponse',
+                            arguments: [
+                                operationId,
+                                FS_OPERATION_SUCCESS,
+                                [
+                                    audioBuffer.getChannelData(0),
+                                    audioBuffer.getChannelData(1),
+                                ],
+                            ]
+                        },
+                    })
                 })
-            })
+                .catch(() => {
+                    node.port.postMessage({
+                        type: 'fs',
+                        payload: {
+                            functionName: 'readSoundFileResponse',
+                            arguments: [
+                                operationId,
+                                FS_OPERATION_FAILURE,
+                            ]
+                        },
+                    })
+                })
             break
         default:
-            throw new Error(`Unknown message type from node ${type}`)
+            throw new Error(`Unknown callback ${payload.functionName}`)
     }
 }
 

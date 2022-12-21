@@ -1,3 +1,7 @@
+import makeFetchRetry from 'fetch-retry'
+
+const fetchRetry = makeFetchRetry(fetch)
+
 export const addModule = async (
     context: AudioContext,
     processorCode: string
@@ -7,12 +11,27 @@ export const addModule = async (
     return context.audioWorklet.addModule(workletProcessorUrl)
 }
 
-// TODO : Error handling
+// TODO : testing
 export const loadAudioBuffer = async (
     url: string,
     context: BaseAudioContext
 ) => {
-    const response = await fetch(url)
+    let response: Response
+    try {
+        response = await fetchRetry(url, { retries: 3 })
+    } catch(err) {
+        throw new FileError(response.status, err.toString())
+    }
+    if (!response.ok) {
+        const responseText = await response.text()
+        throw new FileError(response.status, responseText)
+    }
     const arrayBuffer = await response.arrayBuffer()
     return context.decodeAudioData(arrayBuffer)
+}
+
+export class FileError extends Error {
+    constructor(status: Response['status'], msg: string) {
+        super(`Error ${status} : ${msg}`)
+    }
 }

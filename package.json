@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "TODO",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/WebPd_audioworklets/index.js",
   "types": "./dist/types/index.d.ts",
   "scripts": {
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
@@ -29,5 +29,8 @@
     "rollup": "^3.7.0",
     "rollup-plugin-string": "^3.0.0",
     "tslib": "^2.4.0"
+  },
+  "dependencies": {
+    "fetch-retry": "^5.0.3"
   }
 }

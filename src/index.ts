@@ -10,8 +10,8 @@
  */
 
 export { default as WebPdWorkletNode } from './WebPdWorkletNode'
-import _WebPdWorkletProcessorCode from './WebPdWorkletProcessor.js'
-import AssemblyscriptWasmBindingsCode from '../node_modules/@webpd/compiler-js/dist/assemblyscript-wasm-bindings.iife.js'
+import _WebPdWorkletProcessorCode from './WebPdWorkletProcessor'
+import AssemblyscriptWasmBindingsCode from '@webpd/compiler-js/dist/assemblyscript-wasm-bindings.iife'
 import { addModule } from './utils'
 // Concatenate WorkletProcessor code with the Wasm bindings it needs
 export const WebPdWorkletProcessorCode =
