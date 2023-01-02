@@ -9,7 +9,7 @@
  *
  */
 
-import { EngineFs, EngineFsCallbacks } from '@webpd/compiler-js'
+import { Engine } from '@webpd/compiler-js'
 
 export default class WebPdWorkletNode extends AudioWorkletNode {
     override port: WebPdWorkletNodeMessagePort
@@ -53,7 +53,7 @@ interface FsReadSoundFileResponse {
     type: 'fs'
     payload: {
         functionName: 'readSoundFileResponse'
-        arguments: Parameters<EngineFs['readSoundFileResponse']>
+        arguments: Parameters<Engine['fs']['readSoundFileResponse']>
     }
 }
 
@@ -62,8 +62,8 @@ type OutgoingMessage = SetWasmMessage | SetJsMessage | FsReadSoundFileResponse
 interface FsRequestReadSoundFile {
     type: 'fs'
     payload: {
-        functionName: 'readSound'
-        arguments: Parameters<EngineFsCallbacks['readSound']>
+        functionName: 'onRequestReadSoundFile'
+        arguments: Parameters<Engine['fs']['onRequestReadSoundFile']>
     }
 }
 

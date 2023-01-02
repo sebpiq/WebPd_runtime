@@ -11,7 +11,7 @@ const fsWeb = (
         throw new Error(`Unknown message type from node ${type}`)
     }
     switch (payload.functionName) {
-        case 'readSound':
+        case 'onRequestReadSoundFile':
             const [operationId, url] = payload.arguments
             loadAudioBuffer(url, node.context)
                 .then((audioBuffer) => {

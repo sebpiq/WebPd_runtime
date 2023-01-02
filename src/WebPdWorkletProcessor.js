@@ -49,7 +49,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 )
                 break
             case 'code:JS':
-                this.setJs(message.data.payload.jsCode)
+                this.setJsCode(message.data.payload.jsCode)
                 this.setArrays(message.data.payload.arrays)
                 break
             case 'fs':
@@ -63,27 +63,34 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        const fsCallbacks = ['readSound'].reduce((callbacks, functionName) => {
-                callbacks[functionName] = (...args) => {
-                    this.port.postMessage({
-                        type: 'fs',
-                        payload: {
-                            functionName,
-                            arguments: args,                        },
-                    })
-                }
-                return callbacks
-            }, {})
-        return AssemblyscriptWasmBindings.createEngine(wasmBuffer, {
-            fsCallbacks,
-        }).then((engine) => {
-            this.engine = engine
-            this.dspConfigured = false
+        return AssemblyscriptWasmBindings.createEngine(wasmBuffer).then((engine) => {
+            this.setEngine(engine)
+            return engine
         })
     }
 
-    setCode(code) {
-        this.engine = new Function(code)()
+    setJsCode(code) {
+        console.log(code)
+        const engine = new Function(`
+            ${code}
+            return exports
+        `)()
+        this.setEngine(engine)
+    }
+
+    setEngine(engine) {
+        ['onRequestReadSoundFile'].forEach(functionName => {
+            engine.fs[functionName] = (...args) => {
+                this.port.postMessage({
+                    type: 'fs',
+                    payload: {
+                        functionName,
+                        arguments: args,
+                    },
+                })
+            }
+        })
+        this.engine = engine
         this.dspConfigured = false
     }
 
