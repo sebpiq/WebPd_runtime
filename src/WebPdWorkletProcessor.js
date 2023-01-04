@@ -54,11 +54,14 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.setArrays(message.data.payload.arrays)
                 break
             case 'fs':
-                const returned = this.engine.fs[message.data.payload.functionName](...message.data.payload.arguments)
+                const returned = this.engine.fs[
+                    message.data.payload.functionName
+                ](...message.data.payload.arguments)
                 this.port.postMessage({
                     type: 'fs',
                     payload: {
-                        functionName: message.data.payload.functionName + '_return',
+                        functionName:
+                            message.data.payload.functionName + '_return',
                         operationId: message.data.payload.arguments[0],
                         returned,
                     },
@@ -71,10 +74,12 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        return AssemblyscriptWasmBindings.createEngine(wasmBuffer).then((engine) => {
-            this.setEngine(engine)
-            return engine
-        })
+        return AssemblyscriptWasmBindings.createEngine(wasmBuffer).then(
+            (engine) => {
+                this.setEngine(engine)
+                return engine
+            }
+        )
     }
 
     setJsCode(code) {
@@ -86,17 +91,19 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setEngine(engine) {
-        ['onRequestReadSoundFile', 'onRequestReadSoundStream'].forEach(functionName => {
-            engine.fs[functionName] = (...args) => {
-                this.port.postMessage({
-                    type: 'fs',
-                    payload: {
-                        functionName,
-                        arguments: args,
-                    },
-                })
+        ;['onRequestReadSoundFile', 'onRequestReadSoundStream'].forEach(
+            (functionName) => {
+                engine.fs[functionName] = (...args) => {
+                    this.port.postMessage({
+                        type: 'fs',
+                        payload: {
+                            functionName,
+                            arguments: args,
+                        },
+                    })
+                }
             }
-        })
+        )
         this.engine = engine
         this.dspConfigured = false
     }

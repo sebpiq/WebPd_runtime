@@ -74,8 +74,12 @@ interface FsSoundStreamClose {
     }
 }
 
-type OutgoingMessage = SetWasmMessage | SetJsMessage | FsReadSoundFileResponse 
-    | FsSoundStreamData | FsSoundStreamClose
+type OutgoingMessage =
+    | SetWasmMessage
+    | SetJsMessage
+    | FsReadSoundFileResponse
+    | FsSoundStreamData
+    | FsSoundStreamClose
 
 export interface FsRequestReadSoundFile {
     type: 'fs'
@@ -120,5 +124,9 @@ export interface ReadSoundFileResponseReturn {
     }
 }
 
-export type IncomingMessage = FsRequestReadSoundFile | FsRequestReadSoundStream 
-    | FsSoundStreamDataReturn | ReadSoundFileResponseReturn | FsSoundStreamCloseReturn
+export type IncomingMessage =
+    | FsRequestReadSoundFile
+    | FsRequestReadSoundStream
+    | FsSoundStreamDataReturn
+    | ReadSoundFileResponseReturn
+    | FsSoundStreamCloseReturn

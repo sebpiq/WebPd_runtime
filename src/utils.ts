@@ -19,7 +19,7 @@ export const loadAudioBuffer = async (
     let response: Response
     try {
         response = await fetchRetry(url, { retries: 3 })
-    } catch(err) {
+    } catch (err) {
         throw new FileError(response.status, err.toString())
     }
     if (!response.ok) {
@@ -30,7 +30,9 @@ export const loadAudioBuffer = async (
     return context.decodeAudioData(arrayBuffer)
 }
 
-export const audioBufferToArray = (audioBuffer: AudioBuffer): Array<Float32Array> => {
+export const audioBufferToArray = (
+    audioBuffer: AudioBuffer
+): Array<Float32Array> => {
     const sound: Array<Float32Array> = []
     for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
         sound.push(audioBuffer.getChannelData(channel))
