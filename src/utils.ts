@@ -30,6 +30,14 @@ export const loadAudioBuffer = async (
     return context.decodeAudioData(arrayBuffer)
 }
 
+export const audioBufferToArray = (audioBuffer: AudioBuffer): Array<Float32Array> => {
+    const sound: Array<Float32Array> = []
+    for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+        sound.push(audioBuffer.getChannelData(channel))
+    }
+    return sound
+}
+
 export class FileError extends Error {
     constructor(status: Response['status'], msg: string) {
         super(`Error ${status} : ${msg}`)

@@ -11,6 +11,7 @@
 
 import { Engine } from '@webpd/compiler-js'
 
+// TODO : manage transferables
 export default class WebPdWorkletNode extends AudioWorkletNode {
     override port: WebPdWorkletNodeMessagePort
 
@@ -57,9 +58,26 @@ interface FsReadSoundFileResponse {
     }
 }
 
-type OutgoingMessage = SetWasmMessage | SetJsMessage | FsReadSoundFileResponse
+interface FsSoundStreamData {
+    type: 'fs'
+    payload: {
+        functionName: 'soundStreamData'
+        arguments: Parameters<Engine['fs']['soundStreamData']>
+    }
+}
 
-interface FsRequestReadSoundFile {
+interface FsSoundStreamClose {
+    type: 'fs'
+    payload: {
+        functionName: 'soundStreamClose'
+        arguments: Parameters<Engine['fs']['soundStreamClose']>
+    }
+}
+
+type OutgoingMessage = SetWasmMessage | SetJsMessage | FsReadSoundFileResponse 
+    | FsSoundStreamData | FsSoundStreamClose
+
+export interface FsRequestReadSoundFile {
     type: 'fs'
     payload: {
         functionName: 'onRequestReadSoundFile'
@@ -67,4 +85,40 @@ interface FsRequestReadSoundFile {
     }
 }
 
-export type IncomingMessage = FsRequestReadSoundFile
+export interface FsRequestReadSoundStream {
+    type: 'fs'
+    payload: {
+        functionName: 'onRequestReadSoundStream'
+        arguments: Parameters<Engine['fs']['onRequestReadSoundStream']>
+    }
+}
+
+export interface FsSoundStreamDataReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'soundStreamData_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['soundStreamData']>
+    }
+}
+
+export interface FsSoundStreamCloseReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'soundStreamClose_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['soundStreamClose']>
+    }
+}
+
+export interface ReadSoundFileResponseReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'readSoundFileResponse_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['readSoundFileResponse']>
+    }
+}
+
+export type IncomingMessage = FsRequestReadSoundFile | FsRequestReadSoundStream 
+    | FsSoundStreamDataReturn | ReadSoundFileResponseReturn | FsSoundStreamCloseReturn

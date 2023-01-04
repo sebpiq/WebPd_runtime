@@ -42,6 +42,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     onMessage(message) {
+        console.log(message.data)
         switch (message.data.type) {
             case 'code:WASM':
                 this.setWasm(message.data.payload.wasmBuffer).then(() =>
@@ -53,8 +54,15 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.setArrays(message.data.payload.arrays)
                 break
             case 'fs':
-                message.data.payload.functionName
-                this.engine.fs[message.data.payload.functionName](...message.data.payload.arguments)
+                const returned = this.engine.fs[message.data.payload.functionName](...message.data.payload.arguments)
+                this.port.postMessage({
+                    type: 'fs',
+                    payload: {
+                        functionName: message.data.payload.functionName + '_return',
+                        operationId: message.data.payload.arguments[0],
+                        returned,
+                    },
+                })
                 break
             default:
                 new Error(`unknown message type ${message.type}`)
@@ -70,7 +78,6 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setJsCode(code) {
-        console.log(code)
         const engine = new Function(`
             ${code}
             return exports
@@ -79,7 +86,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setEngine(engine) {
-        ['onRequestReadSoundFile'].forEach(functionName => {
+        ['onRequestReadSoundFile', 'onRequestReadSoundStream'].forEach(functionName => {
             engine.fs[functionName] = (...args) => {
                 this.port.postMessage({
                     type: 'fs',
