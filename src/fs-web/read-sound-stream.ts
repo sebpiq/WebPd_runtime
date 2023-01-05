@@ -1,11 +1,12 @@
 import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler-js'
-import { audioBufferToArray, loadAudioBuffer } from '../utils'
+import { FloatArray } from '../types'
+import { audioBufferToArray, fixSoundChannelCount } from '../utils'
 import WebPdWorkletNode, {
     FsRequestReadSoundStream,
     FsSoundStreamCloseReturn,
     FsSoundStreamDataReturn,
-    IncomingMessage,
 } from '../WebPdWorkletNode'
+import fakeFs from './fake-filesystem'
 
 const BUFFER_HIGH = 10 * 44100
 const BUFFER_LOW = BUFFER_HIGH / 2
@@ -21,10 +22,10 @@ export default async (
     payload: ReadSoundStreamMessage['payload']
 ) => {
     if (payload.functionName === 'onRequestReadSoundStream') {
-        const [operationId, url] = payload.arguments
-        let audioBuffer: AudioBuffer
+        const [operationId, url, [channelCount]] = payload.arguments
+        let sound: FloatArray[]
         try {
-            audioBuffer = await loadAudioBuffer(url, node.context)
+            sound = await fakeFs.readSound(url, node.context)
         } catch (err) {
             console.error(err)
             node.port.postMessage({
@@ -37,11 +38,18 @@ export default async (
             return
         }
 
-        if (audioBuffer) {
-            const sound = audioBufferToArray(audioBuffer)
-            STREAMS[operationId] = new FakeStream(node, operationId, sound)
+        if (sound) {
+            STREAMS[operationId] = new FakeStream(
+                node, 
+                operationId, 
+                fixSoundChannelCount(
+                    sound, 
+                    channelCount
+                )
+            )
             streamLoop(STREAMS[operationId], 0)
         }
+    
     } else if (payload.functionName === 'soundStreamData_return') {
         const stream = STREAMS[payload.operationId]
         if (!stream) {
@@ -57,12 +65,12 @@ class FakeStream {
     public readPosition: number
     public frameCount: number
     public operationId: number
-    public sound: Float32Array[]
+    public sound: FloatArray[]
 
     constructor(
         node: WebPdWorkletNode,
         operationId: number,
-        sound: Float32Array[]
+        sound: FloatArray[]
     ) {
         this.node = node
         this.sound = sound
@@ -99,8 +107,8 @@ const streamLoop = (stream: FakeStream, framesAvailableInEngine: number) => {
                         arguments: [stream.operationId, block],
                     },
 
-                    // Add as transferables to avoid copies between threads
                 },
+                // Add as transferables to avoid copies between threads
                 block.map((array) => array.buffer)
             )
         } else {

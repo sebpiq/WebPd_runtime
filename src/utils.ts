@@ -1,4 +1,5 @@
 import makeFetchRetry from 'fetch-retry'
+import { FloatArray, FloatArrayType } from './types'
 
 const fetchRetry = makeFetchRetry(fetch)
 
@@ -12,9 +13,8 @@ export const addModule = async (
 }
 
 // TODO : testing
-export const loadAudioBuffer = async (
+export const fetchFile = async (
     url: string,
-    context: BaseAudioContext
 ) => {
     let response: Response
     try {
@@ -26,18 +26,34 @@ export const loadAudioBuffer = async (
         const responseText = await response.text()
         throw new FileError(response.status, responseText)
     }
-    const arrayBuffer = await response.arrayBuffer()
-    return context.decodeAudioData(arrayBuffer)
+    return response.arrayBuffer()
 }
 
 export const audioBufferToArray = (
     audioBuffer: AudioBuffer
-): Array<Float32Array> => {
-    const sound: Array<Float32Array> = []
+): Array<FloatArray> => {
+    const sound: Array<FloatArray> = []
     for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
         sound.push(audioBuffer.getChannelData(channel))
     }
     return sound
+}
+
+// TODO : testing
+export const fixSoundChannelCount = (
+    sound: Array<FloatArray>, 
+    targetChannelCount: number
+) => {
+    if (sound.length === 0) {
+        throw new Error(`Received empty sound`)
+    }
+    const floatArrayType = sound[0].constructor as FloatArrayType
+    const frameCount = sound[0].length
+    const fixedSound = sound.slice(0, targetChannelCount)
+    while (sound.length < targetChannelCount) {
+        fixedSound.push(new floatArrayType(frameCount))
+    }
+    return fixedSound
 }
 
 export class FileError extends Error {

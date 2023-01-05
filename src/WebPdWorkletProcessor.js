@@ -91,7 +91,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setEngine(engine) {
-        ;['onRequestReadSoundFile', 'onRequestReadSoundStream'].forEach(
+        ;['onRequestReadSoundFile', 'onRequestReadSoundStream', 'onRequestWriteSoundFile'].forEach(
             (functionName) => {
                 engine.fs[functionName] = (...args) => {
                     this.port.postMessage({

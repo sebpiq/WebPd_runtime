@@ -58,6 +58,14 @@ interface FsReadSoundFileResponse {
     }
 }
 
+interface FsWriteSoundFileResponse {
+    type: 'fs'
+    payload: {
+        functionName: 'writeSoundFileResponse'
+        arguments: Parameters<Engine['fs']['writeSoundFileResponse']>
+    }
+}
+
 interface FsSoundStreamData {
     type: 'fs'
     payload: {
@@ -80,12 +88,21 @@ type OutgoingMessage =
     | FsReadSoundFileResponse
     | FsSoundStreamData
     | FsSoundStreamClose
+    | FsWriteSoundFileResponse
 
 export interface FsRequestReadSoundFile {
     type: 'fs'
     payload: {
         functionName: 'onRequestReadSoundFile'
         arguments: Parameters<Engine['fs']['onRequestReadSoundFile']>
+    }
+}
+
+export interface FsRequestWriteSoundFile {
+    type: 'fs'
+    payload: {
+        functionName: 'onRequestWriteSoundFile'
+        arguments: Parameters<Engine['fs']['onRequestWriteSoundFile']>
     }
 }
 
@@ -124,9 +141,20 @@ export interface ReadSoundFileResponseReturn {
     }
 }
 
+export interface WriteSoundFileResponseReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'writeSoundFileResponse_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['writeSoundFileResponse']>
+    }
+}
+
 export type IncomingMessage =
     | FsRequestReadSoundFile
     | FsRequestReadSoundStream
     | FsSoundStreamDataReturn
     | ReadSoundFileResponseReturn
     | FsSoundStreamCloseReturn
+    | FsRequestWriteSoundFile
+    | WriteSoundFileResponseReturn
