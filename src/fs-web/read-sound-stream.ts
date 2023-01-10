@@ -1,95 +1,65 @@
 import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler-js'
-import { FloatArray } from '../types'
-import { audioBufferToArray, fixSoundChannelCount } from '../utils'
 import WebPdWorkletNode, {
-    FsRequestReadSoundStream,
-    FsSoundStreamCloseReturn,
-    FsSoundStreamDataReturn,
+    FsOnOpenSoundReadStream,
+    FsCloseSoundStreamReturn,
+    FsSendSoundStreamDataReturn,
 } from '../WebPdWorkletNode'
-import fakeFs from './fake-filesystem'
+import fakeFs, { FakeStream, pullBlock } from './fake-filesystem'
+
+const STREAMS: { [operationId: number]: FakeStream } = {}
 
 const BUFFER_HIGH = 10 * 44100
 const BUFFER_LOW = BUFFER_HIGH / 2
-const STREAMS: { [operationId: number]: FakeStream } = {}
 
-type ReadSoundStreamMessage =
-    | FsRequestReadSoundStream
-    | FsSoundStreamDataReturn
-    | FsSoundStreamCloseReturn
+type SoundReadStreamMessage =
+    | FsOnOpenSoundReadStream
+    | FsSendSoundStreamDataReturn
+    | FsCloseSoundStreamReturn
 
 export default async (
     node: WebPdWorkletNode,
-    payload: ReadSoundStreamMessage['payload']
+    payload: SoundReadStreamMessage['payload']
 ) => {
-    if (payload.functionName === 'onRequestReadSoundStream') {
+    if (payload.functionName === 'onOpenSoundReadStream') {
         const [operationId, url, [channelCount]] = payload.arguments
-        let sound: FloatArray[]
+        let stream: FakeStream
         try {
-            sound = await fakeFs.readSound(url, node.context)
+            stream = await fakeFs.readStreamSound(url, channelCount, node.context)
         } catch (err) {
             console.error(err)
             node.port.postMessage({
                 type: 'fs',
                 payload: {
-                    functionName: 'soundStreamClose',
+                    functionName: 'closeSoundStream',
                     arguments: [operationId, FS_OPERATION_FAILURE],
                 },
             })
             return
         }
-
-        if (sound) {
-            STREAMS[operationId] = new FakeStream(
-                node, 
-                operationId, 
-                fixSoundChannelCount(
-                    sound, 
-                    channelCount
-                )
-            )
-            streamLoop(STREAMS[operationId], 0)
-        }
+        STREAMS[operationId] = stream
+        streamLoop(node, STREAMS[operationId], operationId, 0)
     
-    } else if (payload.functionName === 'soundStreamData_return') {
+    } else if (payload.functionName === 'sendSoundStreamData_return') {
         const stream = STREAMS[payload.operationId]
         if (!stream) {
             throw new Error(`unknown stream ${payload.operationId}`)
         }
-        streamLoop(stream, payload.returned)
-    } else if (payload.functionName === 'soundStreamClose_return') {
+        streamLoop(node, stream, payload.operationId, payload.returned)
+
+    } else if (payload.functionName === 'closeSoundStream_return') {
+        if (STREAMS[payload.operationId]) {
+            delete STREAMS[payload.operationId]
+        }
     }
 }
 
-class FakeStream {
-    public node: WebPdWorkletNode
-    public readPosition: number
-    public frameCount: number
-    public operationId: number
-    public sound: FloatArray[]
-
-    constructor(
-        node: WebPdWorkletNode,
-        operationId: number,
-        sound: FloatArray[]
-    ) {
-        this.node = node
-        this.sound = sound
-        this.frameCount = sound[0].length
-        this.readPosition = 0
-        this.operationId = operationId
-    }
-}
-
-const pullBlock = (stream: FakeStream, frameCount: number) => {
-    const block = stream.sound.map((array) =>
-        array.slice(stream.readPosition, stream.readPosition + frameCount)
-    )
-    stream.readPosition += frameCount
-    return block
-}
-
-const streamLoop = (stream: FakeStream, framesAvailableInEngine: number) => {
-    const sampleRate = stream.node.context.sampleRate
+const streamLoop = (
+    node: WebPdWorkletNode, 
+    stream: FakeStream, 
+    operationId: number,
+    framesAvailableInEngine: number
+) => {
+    const sampleRate = node.context.sampleRate
     const secondsToThreshold =
         Math.max(framesAvailableInEngine - BUFFER_LOW, 10) / sampleRate
     const framesToSend =
@@ -99,12 +69,12 @@ const streamLoop = (stream: FakeStream, framesAvailableInEngine: number) => {
     setTimeout(() => {
         if (stream.readPosition < stream.frameCount) {
             const block = pullBlock(stream, framesToSend)
-            stream.node.port.postMessage(
+            node.port.postMessage(
                 {
                     type: 'fs',
                     payload: {
-                        functionName: 'soundStreamData',
-                        arguments: [stream.operationId, block],
+                        functionName: 'sendSoundStreamData',
+                        arguments: [operationId, block],
                     },
 
                 },
@@ -112,11 +82,11 @@ const streamLoop = (stream: FakeStream, framesAvailableInEngine: number) => {
                 block.map((array) => array.buffer)
             )
         } else {
-            stream.node.port.postMessage({
+            node.port.postMessage({
                 type: 'fs',
                 payload: {
-                    functionName: 'soundStreamClose',
-                    arguments: [stream.operationId, FS_OPERATION_SUCCESS],
+                    functionName: 'closeSoundStream',
+                    arguments: [operationId, FS_OPERATION_SUCCESS],
                 },
             })
         }

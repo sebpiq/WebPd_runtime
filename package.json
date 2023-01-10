@@ -8,6 +8,7 @@
   "scripts": {
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
     "rollup": "npx rollup --config rollup.mjs",
+    "transpile": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./transpile-javascript.ts",
     "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
     "eslint": "npm explore @webpd/dev -- npm run eslint $(pwd)/src",
     "all": "npm run test-bail && npm run prettier && npm run eslint"
@@ -24,10 +25,13 @@
   "homepage": "https://github.com/sebpiq/WebPd_dsp-graph#readme",
   "devDependencies": {
     "@rollup/plugin-typescript": "^10.0.1",
+    "@types/audioworklet": "^0.0.36",
+    "@types/jest": "^29.2.5",
     "@webpd/compiler-js": "file:../WebPd_compiler-js",
     "@webpd/dev": "file:../WebPd_dev",
     "rollup": "^3.7.0",
     "rollup-plugin-string": "^3.0.0",
+    "ts-node": "^10.9.1",
     "tslib": "^2.4.0"
   },
   "dependencies": {

@@ -9,20 +9,30 @@
  *
  */
 
+interface Settings {
+    sampleRate: number
+    blockSize: number
+}
+
+const FS_CALLBACK_NAMES = ['onReadSoundFile', 'onOpenSoundReadStream', 'onWriteSoundFile', 'onOpenSoundWriteStream', 'onSoundStreamData']
+
 class WasmWorkletProcessor extends AudioWorkletProcessor {
-    constructor(settings) {
+    private settings: Settings
+    private dspConfigured: boolean
+    private engine: TypesForWorkletProcessor.Engine
+
+    constructor() {
         super()
         this.port.onmessage = this.onMessage.bind(this)
         this.settings = {
             blockSize: null,
-            bitDepth: settings.processorOptions.bitDepth,
-            sampleRate: settings.processorOptions.sampleRate,
+            sampleRate,
         }
         this.dspConfigured = false
         this.engine = null
     }
 
-    process(inputs, outputs) {
+    process(inputs: Float32Array[][], outputs: Float32Array[][]) {
         const output = outputs[0]
         const input = inputs[0]
         if (!this.dspConfigured) {
@@ -41,39 +51,39 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         return true
     }
 
-    onMessage(message) {
-        console.log(message.data)
-        switch (message.data.type) {
+    onMessage(messageEvent: MessageEvent<TypesForWorkletProcessor.OutgoingMessage>) {
+        const message = messageEvent.data
+        switch (message.type) {
             case 'code:WASM':
-                this.setWasm(message.data.payload.wasmBuffer).then(() =>
-                    this.setArrays(message.data.payload.arrays)
+                this.setWasm(message.payload.wasmBuffer).then(() =>
+                    this.setArrays(message.payload.arrays)
                 )
                 break
             case 'code:JS':
-                this.setJsCode(message.data.payload.jsCode)
-                this.setArrays(message.data.payload.arrays)
+                this.setJsCode(message.payload.jsCode)
+                this.setArrays(message.payload.arrays)
                 break
             case 'fs':
                 const returned = this.engine.fs[
-                    message.data.payload.functionName
-                ](...message.data.payload.arguments)
+                    message.payload.functionName
+                ].apply(null, message.payload.arguments)
                 this.port.postMessage({
                     type: 'fs',
                     payload: {
                         functionName:
-                            message.data.payload.functionName + '_return',
-                        operationId: message.data.payload.arguments[0],
+                            message.payload.functionName + '_return',
+                        operationId: message.payload.arguments[0],
                         returned,
                     },
                 })
                 break
             default:
-                new Error(`unknown message type ${message.type}`)
+                new Error(`unknown message type ${(message as any).type}`)
         }
     }
 
     // TODO : control for channelCount of wasmModule
-    setWasm(wasmBuffer) {
+    setWasm(wasmBuffer: ArrayBuffer) {
         return AssemblyscriptWasmBindings.createEngine(wasmBuffer).then(
             (engine) => {
                 this.setEngine(engine)
@@ -82,7 +92,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         )
     }
 
-    setJsCode(code) {
+    setJsCode(code: string) {
         const engine = new Function(`
             ${code}
             return exports
@@ -90,10 +100,11 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.setEngine(engine)
     }
 
-    setEngine(engine) {
-        ;['onRequestReadSoundFile', 'onRequestReadSoundStream', 'onRequestWriteSoundFile'].forEach(
+    setEngine(engine: TypesForWorkletProcessor.Engine) {
+        FS_CALLBACK_NAMES.forEach(
             (functionName) => {
-                engine.fs[functionName] = (...args) => {
+                (engine.fs as any)[functionName] = (...args: any) => {
+                    // We don't use transferables, because that would imply reallocating each time new array in the engine.
                     this.port.postMessage({
                         type: 'fs',
                         payload: {
@@ -108,16 +119,16 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.dspConfigured = false
     }
 
-    setArrays(arrays) {
+    setArrays(arrays: { [arrayName: string]: Float32Array | Float64Array }) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
             if (
-                (this.settings.bitDepth === 32 &&
+                (this.engine.metadata.audioSettings.bitDepth === 32 &&
                     arrayData.constructor !== Float32Array) ||
-                (this.settings.bitDepth === 64 &&
+                (this.engine.metadata.audioSettings.bitDepth === 64 &&
                     arrayData.constructor !== Float64Array)
             ) {
                 console.error(
-                    `Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.bitDepth}`
+                    `Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.engine.metadata.audioSettings.bitDepth}`
                 )
                 return
             }

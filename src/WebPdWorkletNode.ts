@@ -18,9 +18,6 @@ export default class WebPdWorkletNode extends AudioWorkletNode {
     constructor(context: AudioContext) {
         super(context, 'webpd-node', {
             numberOfOutputs: 1,
-            processorOptions: {
-                sampleRate: context.sampleRate,
-            },
         })
     }
 }
@@ -53,36 +50,36 @@ interface SetJsMessage {
 interface FsReadSoundFileResponse {
     type: 'fs'
     payload: {
-        functionName: 'readSoundFileResponse'
-        arguments: Parameters<Engine['fs']['readSoundFileResponse']>
+        functionName: 'sendReadSoundFileResponse'
+        arguments: Parameters<Engine['fs']['sendReadSoundFileResponse']>
     }
 }
 
 interface FsWriteSoundFileResponse {
     type: 'fs'
     payload: {
-        functionName: 'writeSoundFileResponse'
-        arguments: Parameters<Engine['fs']['writeSoundFileResponse']>
+        functionName: 'sendWriteSoundFileResponse'
+        arguments: Parameters<Engine['fs']['sendWriteSoundFileResponse']>
     }
 }
 
 interface FsSoundStreamData {
     type: 'fs'
     payload: {
-        functionName: 'soundStreamData'
-        arguments: Parameters<Engine['fs']['soundStreamData']>
+        functionName: 'sendSoundStreamData'
+        arguments: Parameters<Engine['fs']['sendSoundStreamData']>
     }
 }
 
 interface FsSoundStreamClose {
     type: 'fs'
     payload: {
-        functionName: 'soundStreamClose'
-        arguments: Parameters<Engine['fs']['soundStreamClose']>
+        functionName: 'closeSoundStream'
+        arguments: Parameters<Engine['fs']['closeSoundStream']>
     }
 }
 
-type OutgoingMessage =
+export type OutgoingMessage =
     | SetWasmMessage
     | SetJsMessage
     | FsReadSoundFileResponse
@@ -90,71 +87,89 @@ type OutgoingMessage =
     | FsSoundStreamClose
     | FsWriteSoundFileResponse
 
-export interface FsRequestReadSoundFile {
+export interface FsOnReadSoundFile {
     type: 'fs'
     payload: {
-        functionName: 'onRequestReadSoundFile'
-        arguments: Parameters<Engine['fs']['onRequestReadSoundFile']>
+        functionName: 'onReadSoundFile'
+        arguments: Parameters<Engine['fs']['onReadSoundFile']>
     }
 }
 
-export interface FsRequestWriteSoundFile {
+export interface FsOnWriteSoundFile {
     type: 'fs'
     payload: {
-        functionName: 'onRequestWriteSoundFile'
-        arguments: Parameters<Engine['fs']['onRequestWriteSoundFile']>
+        functionName: 'onWriteSoundFile'
+        arguments: Parameters<Engine['fs']['onWriteSoundFile']>
     }
 }
 
-export interface FsRequestReadSoundStream {
+export interface FsOnOpenSoundReadStream {
     type: 'fs'
     payload: {
-        functionName: 'onRequestReadSoundStream'
-        arguments: Parameters<Engine['fs']['onRequestReadSoundStream']>
+        functionName: 'onOpenSoundReadStream'
+        arguments: Parameters<Engine['fs']['onOpenSoundReadStream']>
     }
 }
 
-export interface FsSoundStreamDataReturn {
+export interface FsOnOpenSoundWriteStream {
     type: 'fs'
     payload: {
-        functionName: 'soundStreamData_return'
+        functionName: 'onOpenSoundWriteStream'
+        arguments: Parameters<Engine['fs']['onOpenSoundWriteStream']>
+    }
+}
+
+export interface FsOnSoundStreamData {
+    type: 'fs'
+    payload: {
+        functionName: 'onSoundStreamData'
+        arguments: Parameters<Engine['fs']['onSoundStreamData']>
+    }
+}
+
+export interface FsSendSoundStreamDataReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'sendSoundStreamData_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['soundStreamData']>
+        returned: ReturnType<Engine['fs']['sendSoundStreamData']>
     }
 }
 
-export interface FsSoundStreamCloseReturn {
+export interface FsCloseSoundStreamReturn {
     type: 'fs'
     payload: {
-        functionName: 'soundStreamClose_return'
+        functionName: 'closeSoundStream_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['soundStreamClose']>
+        returned: ReturnType<Engine['fs']['closeSoundStream']>
     }
 }
 
-export interface ReadSoundFileResponseReturn {
+export interface FsSendReadSoundFileResponseReturn {
     type: 'fs'
     payload: {
-        functionName: 'readSoundFileResponse_return'
+        functionName: 'sendReadSoundFileResponse_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['readSoundFileResponse']>
+        returned: ReturnType<Engine['fs']['sendReadSoundFileResponse']>
     }
 }
 
-export interface WriteSoundFileResponseReturn {
+export interface FsSendWriteSoundFileResponseReturn {
     type: 'fs'
     payload: {
-        functionName: 'writeSoundFileResponse_return'
+        functionName: 'sendWriteSoundFileResponse_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['writeSoundFileResponse']>
+        returned: ReturnType<Engine['fs']['sendWriteSoundFileResponse']>
     }
 }
 
 export type IncomingMessage =
-    | FsRequestReadSoundFile
-    | FsRequestReadSoundStream
-    | FsSoundStreamDataReturn
-    | ReadSoundFileResponseReturn
-    | FsSoundStreamCloseReturn
-    | FsRequestWriteSoundFile
-    | WriteSoundFileResponseReturn
+    | FsOnReadSoundFile
+    | FsOnWriteSoundFile
+    | FsOnOpenSoundReadStream
+    | FsOnOpenSoundWriteStream
+    | FsOnSoundStreamData
+    | FsSendSoundStreamDataReturn
+    | FsCloseSoundStreamReturn
+    | FsSendReadSoundFileResponseReturn
+    | FsSendWriteSoundFileResponseReturn

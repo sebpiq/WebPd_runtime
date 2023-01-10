@@ -2,18 +2,18 @@ import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler-js'
 import { fixSoundChannelCount } from '../utils'
 import fakeFs from './fake-filesystem'
 import WebPdWorkletNode, {
-    FsRequestReadSoundFile,
-    ReadSoundFileResponseReturn,
+    FsOnReadSoundFile,
+    FsSendReadSoundFileResponseReturn,
 } from '../WebPdWorkletNode'
 import { FloatArray, OperationStatus } from '../types'
 
-type ReadSoundFileMessage = FsRequestReadSoundFile | ReadSoundFileResponseReturn
+type ReadSoundFileMessage = FsOnReadSoundFile | FsSendReadSoundFileResponseReturn
 
 export default async (
     node: WebPdWorkletNode,
     payload: ReadSoundFileMessage['payload']
 ) => {
-    if (payload.functionName === 'onRequestReadSoundFile') {
+    if (payload.functionName === 'onReadSoundFile') {
         const [operationId, url, [channelCount]] = payload.arguments
         let operationStatus: OperationStatus = FS_OPERATION_SUCCESS
         let sound: FloatArray[] = null
@@ -36,7 +36,7 @@ export default async (
             {
                 type: 'fs',
                 payload: {
-                    functionName: 'readSoundFileResponse',
+                    functionName: 'sendReadSoundFileResponse',
                     arguments: [operationId, operationStatus, sound],
                 },
 
@@ -44,6 +44,6 @@ export default async (
             // Add as transferables to avoid copies between threads
             sound.map((array) => array.buffer)
         )
-    } else if (payload.functionName === 'readSoundFileResponse_return') {
+    } else if (payload.functionName === 'sendReadSoundFileResponse_return') {
     }
 }

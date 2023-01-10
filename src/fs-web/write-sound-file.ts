@@ -1,19 +1,16 @@
 import { FS_OPERATION_SUCCESS } from '@webpd/compiler-js'
 import { fixSoundChannelCount } from '../utils'
-import WebPdWorkletNode, {
-    FsRequestWriteSoundFile,
-    WriteSoundFileResponseReturn,
-} from '../WebPdWorkletNode'
+import WebPdWorkletNode, { FsOnWriteSoundFile, FsSendWriteSoundFileResponseReturn } from '../WebPdWorkletNode'
 import { OperationStatus } from '../types'
 import fakeFs from './fake-filesystem'
 
-type WriteSoundFileMessage = FsRequestWriteSoundFile | WriteSoundFileResponseReturn
+type WriteSoundFileMessage = FsOnWriteSoundFile | FsSendWriteSoundFileResponseReturn
 
 export default async (
     node: WebPdWorkletNode,
     payload: WriteSoundFileMessage['payload']
 ) => {
-    if (payload.functionName === 'onRequestWriteSoundFile') {
+    if (payload.functionName === 'onWriteSoundFile') {
         const [operationId, sound, url, [channelCount]] = payload.arguments
         const fixedSound = fixSoundChannelCount(sound, channelCount)
         await fakeFs.writeSound(fixedSound, url)
@@ -22,13 +19,13 @@ export default async (
             {
                 type: 'fs',
                 payload: {
-                    functionName: 'writeSoundFileResponse',
+                    functionName: 'sendWriteSoundFileResponse',
                     arguments: [operationId, operationStatus],
                 },
 
             },
         )
 
-    } else if (payload.functionName === 'writeSoundFileResponse_return') {
+    } else if (payload.functionName === 'sendWriteSoundFileResponse_return') {
     }
 }
