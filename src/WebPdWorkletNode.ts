@@ -20,6 +20,13 @@ export default class WebPdWorkletNode extends AudioWorkletNode {
             numberOfOutputs: 1,
         })
     }
+
+    destroy() {
+        this.port.postMessage({
+            type: 'destroy',
+            payload: {},
+        })
+    }
 }
 
 interface WebPdWorkletNodeMessagePort extends MessagePort {
@@ -79,6 +86,11 @@ interface FsSoundStreamClose {
     }
 }
 
+interface DestroyMessage {
+    type: 'destroy'
+    payload: {}
+}
+
 export type OutgoingMessage =
     | SetWasmMessage
     | SetJsMessage
@@ -86,6 +98,7 @@ export type OutgoingMessage =
     | FsSoundStreamData
     | FsSoundStreamClose
     | FsWriteSoundFileResponse
+    | DestroyMessage
 
 export interface FsOnReadSoundFile {
     type: 'fs'
@@ -124,6 +137,14 @@ export interface FsOnSoundStreamData {
     payload: {
         functionName: 'onSoundStreamData'
         arguments: Parameters<Engine['fs']['onSoundStreamData']>
+    }
+}
+
+export interface FsOnCloseSoundStream {
+    type: 'fs'
+    payload: {
+        functionName: 'onCloseSoundStream'
+        arguments: Parameters<Engine['fs']['onCloseSoundStream']>
     }
 }
 
@@ -169,6 +190,7 @@ export type IncomingMessage =
     | FsOnOpenSoundReadStream
     | FsOnOpenSoundWriteStream
     | FsOnSoundStreamData
+    | FsOnCloseSoundStream
     | FsSendSoundStreamDataReturn
     | FsCloseSoundStreamReturn
     | FsSendReadSoundFileResponseReturn

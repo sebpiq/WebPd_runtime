@@ -13,6 +13,7 @@ import { FloatArray } from "../types"
 import { audioBufferToArray, fetchFile, fixSoundChannelCount } from "../utils"
 
 const FILES: {[url: string]: FakeFile} = {}
+const STREAMS: {[operationId: number]: FakeStream} = {}
 
 interface FakeSoundFile {
     type: 'sound',
@@ -65,7 +66,9 @@ export const readSound = async (
             const audioBuffer = await context.decodeAudioData(fakeFile.data)
             return audioBufferToArray(audioBuffer)
         case 'sound':
-            return fakeFile.data
+            // We copy the data here o it can be manipulated freely by the host.
+            // e.g. if the buffer is sent as transferrable to the node we don't want the original to be transferred.
+            return fakeFile.data.map(array => array.slice())
     }
 }
 
@@ -76,27 +79,38 @@ const writeSound = async (sound: FloatArray[], url: string) => {
     }
 }
 
-const readStreamSound = async (url: string, channelCount: number, context: BaseAudioContext): Promise<FakeStream> => {
+const readStreamSound = async (operationId: number, url: string, channelCount: number, context: BaseAudioContext): Promise<FakeStream> => {
     const sound = await readSound(url, context)
-    return new FakeStream(
+    STREAMS[operationId] = new FakeStream(
         url,
         fixSoundChannelCount(
             sound, 
             channelCount
         )
     )
+    return STREAMS[operationId]
 }
 
-const writeStreamSound = async (url: string, channelCount: number): Promise<FakeStream> => {
+const writeStreamSound = async (operationId: number, url: string, channelCount: number): Promise<FakeStream> => {
     const emptySound: FloatArray[] = []
     for (let channel = 0; channel < channelCount; channel++) {
         emptySound.push(new Float32Array(0))
     }
+    STREAMS[operationId] = new FakeStream(url, emptySound)
     FILES[url] = {
         type: 'sound',
         data: emptySound,
     }
-    return new FakeStream(url, emptySound)
+    return STREAMS[operationId]
+}
+
+export const getStream = (operationId: number) => {
+    return STREAMS[operationId]
+}
+
+export const killStream = (operationId: number) => {
+    console.log('KILL STREAM', operationId)
+    delete STREAMS[operationId]
 }
 
 export const pullBlock = (stream: FakeStream, frameCount: number) => {

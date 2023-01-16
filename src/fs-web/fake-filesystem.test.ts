@@ -10,13 +10,11 @@
  */
 
 global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve({ test: 100 }),
-  }),
+    Promise.resolve({
+        json: () => Promise.resolve({ test: 100 }),
+    })
 ) as jest.Mock
 
 describe('fake-filesystem', () => {
-    describe('read', () => {
-
-    })
+    describe('read', () => {})
 })

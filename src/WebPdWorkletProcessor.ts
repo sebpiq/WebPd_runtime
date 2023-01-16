@@ -14,7 +14,14 @@ interface Settings {
     blockSize: number
 }
 
-const FS_CALLBACK_NAMES = ['onReadSoundFile', 'onOpenSoundReadStream', 'onWriteSoundFile', 'onOpenSoundWriteStream', 'onSoundStreamData']
+const FS_CALLBACK_NAMES = [
+    'onReadSoundFile',
+    'onOpenSoundReadStream',
+    'onWriteSoundFile',
+    'onOpenSoundWriteStream',
+    'onSoundStreamData',
+    'onCloseSoundStream',
+]
 
 class WasmWorkletProcessor extends AudioWorkletProcessor {
     private settings: Settings
@@ -51,7 +58,9 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         return true
     }
 
-    onMessage(messageEvent: MessageEvent<TypesForWorkletProcessor.OutgoingMessage>) {
+    onMessage(
+        messageEvent: MessageEvent<TypesForWorkletProcessor.OutgoingMessage>
+    ) {
         const message = messageEvent.data
         switch (message.type) {
             case 'code:WASM':
@@ -59,10 +68,12 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                     this.setArrays(message.payload.arrays)
                 )
                 break
+
             case 'code:JS':
                 this.setJsCode(message.payload.jsCode)
                 this.setArrays(message.payload.arrays)
                 break
+
             case 'fs':
                 const returned = this.engine.fs[
                     message.payload.functionName
@@ -70,13 +81,17 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.port.postMessage({
                     type: 'fs',
                     payload: {
-                        functionName:
-                            message.payload.functionName + '_return',
+                        functionName: message.payload.functionName + '_return',
                         operationId: message.payload.arguments[0],
                         returned,
                     },
                 })
                 break
+
+            case 'destroy': 
+                this.destroy()
+                break
+
             default:
                 new Error(`unknown message type ${(message as any).type}`)
         }
@@ -101,39 +116,30 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setEngine(engine: TypesForWorkletProcessor.Engine) {
-        FS_CALLBACK_NAMES.forEach(
-            (functionName) => {
-                (engine.fs as any)[functionName] = (...args: any) => {
-                    // We don't use transferables, because that would imply reallocating each time new array in the engine.
-                    this.port.postMessage({
-                        type: 'fs',
-                        payload: {
-                            functionName,
-                            arguments: args,
-                        },
-                    })
-                }
+        FS_CALLBACK_NAMES.forEach((functionName) => {
+            ;(engine.fs as any)[functionName] = (...args: any) => {
+                // We don't use transferables, because that would imply reallocating each time new array in the engine.
+                this.port.postMessage({
+                    type: 'fs',
+                    payload: {
+                        functionName,
+                        arguments: args,
+                    },
+                })
             }
-        )
+        })
         this.engine = engine
         this.dspConfigured = false
     }
 
     setArrays(arrays: { [arrayName: string]: Float32Array | Float64Array }) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
-            if (
-                (this.engine.metadata.audioSettings.bitDepth === 32 &&
-                    arrayData.constructor !== Float32Array) ||
-                (this.engine.metadata.audioSettings.bitDepth === 64 &&
-                    arrayData.constructor !== Float64Array)
-            ) {
-                console.error(
-                    `Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.engine.metadata.audioSettings.bitDepth}`
-                )
-                return
-            }
-            this.engine.setArray(arrayName, arrayData)
+            this.engine.tarray.set(arrayName, arrayData)
         })
+    }
+
+    destroy() {
+        this.process = () => false
     }
 }
 

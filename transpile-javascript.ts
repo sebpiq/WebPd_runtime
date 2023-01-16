@@ -8,7 +8,7 @@ const WORKLET_PROCESSOR_JS_PATH = './src/WebPdWorkletProcessor.generated.js'
 
 const TRANSPILATION_SETTINGS: ts.TranspileOptions = {
     compilerOptions: {
-        target: ts.ScriptTarget.ES2022,
+        target: ts.ScriptTarget.ES2021,
         module: ts.ModuleKind.None,
     }
 }

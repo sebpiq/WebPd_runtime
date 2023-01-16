@@ -1,7 +1,5 @@
 import WebPdWorkletNode, { FsCloseSoundStreamReturn, FsOnOpenSoundWriteStream, FsOnSoundStreamData } from '../WebPdWorkletNode'
-import fakeFs, { FakeStream, pushBlock } from './fake-filesystem'
-
-const STREAMS: { [operationId: number]: FakeStream } = {}
+import fakeFs, { FakeStream, getStream, killStream, pushBlock } from './fake-filesystem'
 
 type OpenSoundWriteStreamMessage =
     | FsOnOpenSoundWriteStream
@@ -14,20 +12,20 @@ export default async (
 ) => {
     if (payload.functionName === 'onOpenSoundWriteStream') {
         const [operationId, url, [channelCount]] = payload.arguments
-        const stream = await fakeFs.writeStreamSound(url, channelCount)
-        STREAMS[operationId] = stream
+        await fakeFs.writeStreamSound(operationId, url, channelCount)
 
     } else if (payload.functionName === 'onSoundStreamData') {
         const [operationId, sound] = payload.arguments
-        const stream = STREAMS[operationId]
+        const stream = getStream(operationId)
         if (!stream) {
             throw new Error(`unknown stream ${operationId}`)
         }
         pushBlock(stream, sound)
         
     } else if (payload.functionName === 'closeSoundStream_return') {
-        if (STREAMS[payload.operationId]) {
-            delete STREAMS[payload.operationId]
+        const stream = getStream(payload.operationId)
+        if (stream) {
+            killStream(payload.operationId)
         }
     }
 }

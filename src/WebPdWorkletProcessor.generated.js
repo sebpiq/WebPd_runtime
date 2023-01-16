@@ -8,11 +8,15 @@
  * See https://github.com/sebpiq/WebPd_pd-parser for documentation
  *
  */
-const FS_CALLBACK_NAMES = ['onReadSoundFile', 'onOpenSoundReadStream', 'onWriteSoundFile', 'onOpenSoundWriteStream', 'onSoundStreamData'];
+const FS_CALLBACK_NAMES = [
+    'onReadSoundFile',
+    'onOpenSoundReadStream',
+    'onWriteSoundFile',
+    'onOpenSoundWriteStream',
+    'onSoundStreamData',
+    'onCloseSoundStream',
+];
 class WasmWorkletProcessor extends AudioWorkletProcessor {
-    settings;
-    dspConfigured;
-    engine;
     constructor() {
         super();
         this.port.onmessage = this.onMessage.bind(this);
@@ -58,6 +62,9 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                     },
                 });
                 break;
+            case 'destroy':
+                this.destroy();
+                break;
             default:
                 new Error(`unknown message type ${message.type}`);
         }
@@ -78,6 +85,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
     setEngine(engine) {
         FS_CALLBACK_NAMES.forEach((functionName) => {
+            ;
             engine.fs[functionName] = (...args) => {
                 // We don't use transferables, because that would imply reallocating each time new array in the engine.
                 this.port.postMessage({
@@ -94,15 +102,11 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
     setArrays(arrays) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
-            if ((this.engine.metadata.audioSettings.bitDepth === 32 &&
-                arrayData.constructor !== Float32Array) ||
-                (this.engine.metadata.audioSettings.bitDepth === 64 &&
-                    arrayData.constructor !== Float64Array)) {
-                console.error(`Received invalid array ${arrayName} : ${arrayData.constructor}, wrong type for bit-depth ${this.engine.metadata.audioSettings.bitDepth}`);
-                return;
-            }
-            this.engine.setArray(arrayName, arrayData);
+            this.engine.tarray.set(arrayName, arrayData);
         });
+    }
+    destroy() {
+        this.process = () => false;
     }
 }
 registerProcessor('webpd-node', WasmWorkletProcessor);

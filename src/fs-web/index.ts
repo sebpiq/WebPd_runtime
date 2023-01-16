@@ -1,4 +1,5 @@
 import WebPdWorkletNode, { IncomingMessage } from '../WebPdWorkletNode'
+import closeSoundStream from './close-sound-stream'
 import readSoundFile from './read-sound-file'
 import readSoundStream from './read-sound-stream'
 import writeSoundFile from './write-sound-file'
@@ -39,6 +40,10 @@ export default async (
     ) {
         writeSoundStream(node, payload)
         readSoundStream(node, payload)
+    } else if (
+        payload.functionName === 'onCloseSoundStream'
+    ) {
+        closeSoundStream(node, payload)
     } else {
         throw new Error(`Unknown callback ${(payload as any).functionName}`)
     }
