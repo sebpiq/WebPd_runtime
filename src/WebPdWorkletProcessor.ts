@@ -134,7 +134,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     setArrays(arrays: { [arrayName: string]: Float32Array | Float64Array }) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
-            this.engine.tarray.set(arrayName, arrayData)
+            this.engine.farray.set(arrayName, arrayData)
         })
     }
 
