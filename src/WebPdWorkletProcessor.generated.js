@@ -51,6 +51,9 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.setJsCode(message.payload.jsCode);
                 this.setArrays(message.payload.arrays);
                 break;
+            case 'inletCaller':
+                this.engine.inletCallers[message.payload.nodeId][message.payload.portletId](message.payload.message);
+                break;
             case 'fs':
                 const returned = this.engine.fs[message.payload.functionName].apply(null, message.payload.arguments);
                 this.port.postMessage({
@@ -102,7 +105,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
     setArrays(arrays) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
-            this.engine.farray.set(arrayName, arrayData);
+            this.engine.commons.setArray(arrayName, arrayData);
         });
     }
     destroy() {

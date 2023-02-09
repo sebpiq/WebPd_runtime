@@ -10,6 +10,7 @@
  */
 
 import { Engine } from '@webpd/compiler-js'
+import { Message } from '@webpd/compiler-js/src/types'
 
 // TODO : manage transferables
 export default class WebPdWorkletNode extends AudioWorkletNode {
@@ -18,6 +19,7 @@ export default class WebPdWorkletNode extends AudioWorkletNode {
     constructor(context: AudioContext) {
         super(context, 'webpd-node', {
             numberOfOutputs: 1,
+            outputChannelCount: [2],
         })
     }
 
@@ -51,6 +53,15 @@ interface SetJsMessage {
     payload: {
         jsCode: string
         arrays: { [arrayName: string]: Float32Array | Float64Array }
+    }
+}
+
+interface InletCallerMessage {
+    type: 'inletCaller'
+    payload: {
+        nodeId: string
+        portletId: string
+        message: Message
     }
 }
 
@@ -99,6 +110,7 @@ export type OutgoingMessage =
     | FsSoundStreamClose
     | FsWriteSoundFileResponse
     | DestroyMessage
+    | InletCallerMessage
 
 export interface FsOnReadSoundFile {
     type: 'fs'

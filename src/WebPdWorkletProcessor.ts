@@ -74,6 +74,12 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.setArrays(message.payload.arrays)
                 break
 
+            case 'inletCaller':
+                this.engine.inletCallers[message.payload.nodeId][
+                    message.payload.portletId
+                ](message.payload.message)
+                break
+
             case 'fs':
                 const returned = this.engine.fs[
                     message.payload.functionName
@@ -88,7 +94,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 })
                 break
 
-            case 'destroy': 
+            case 'destroy':
                 this.destroy()
                 break
 
@@ -134,7 +140,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
 
     setArrays(arrays: { [arrayName: string]: Float32Array | Float64Array }) {
         Object.entries(arrays).forEach(([arrayName, arrayData]) => {
-            this.engine.farray.set(arrayName, arrayData)
+            this.engine.commons.setArray(arrayName, arrayData)
         })
     }
 
