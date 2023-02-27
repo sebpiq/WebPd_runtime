@@ -44,7 +44,6 @@ interface SetWasmMessage {
     type: 'code:WASM'
     payload: {
         wasmBuffer: ArrayBuffer
-        arrays: { [arrayName: string]: Float32Array | Float64Array }
     }
 }
 
@@ -52,7 +51,6 @@ interface SetJsMessage {
     type: 'code:JS'
     payload: {
         jsCode: string
-        arrays: { [arrayName: string]: Float32Array | Float64Array }
     }
 }
 
