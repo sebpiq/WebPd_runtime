@@ -35,14 +35,10 @@ export default async (
         payload.functionName === 'onSoundStreamData'
     ) {
         writeSoundStream(node, payload)
-    } else if (
-        payload.functionName === 'closeSoundStream_return'
-    ) {
+    } else if (payload.functionName === 'closeSoundStream_return') {
         writeSoundStream(node, payload)
         readSoundStream(node, payload)
-    } else if (
-        payload.functionName === 'onCloseSoundStream'
-    ) {
+    } else if (payload.functionName === 'onCloseSoundStream') {
         closeSoundStream(node, payload)
     } else {
         throw new Error(`Unknown callback ${(payload as any).functionName}`)

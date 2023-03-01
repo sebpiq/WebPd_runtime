@@ -7,7 +7,9 @@ import WebPdWorkletNode, {
 } from '../WebPdWorkletNode'
 import { FloatArray, OperationStatus } from '../types'
 
-type ReadSoundFileMessage = FsOnReadSoundFile | FsSendReadSoundFileResponseReturn
+type ReadSoundFileMessage =
+    | FsOnReadSoundFile
+    | FsSendReadSoundFileResponseReturn
 
 export default async (
     node: WebPdWorkletNode,
@@ -17,7 +19,7 @@ export default async (
         const [operationId, url, [channelCount]] = payload.arguments
         let operationStatus: OperationStatus = FS_OPERATION_SUCCESS
         let sound: FloatArray[] = null
-        
+
         try {
             sound = await fakeFs.readSound(url, node.context)
         } catch (err) {
@@ -26,10 +28,7 @@ export default async (
         }
 
         if (sound) {
-            sound = fixSoundChannelCount(
-                sound, 
-                channelCount
-            )
+            sound = fixSoundChannelCount(sound, channelCount)
         }
 
         node.port.postMessage(
@@ -39,7 +38,6 @@ export default async (
                     functionName: 'sendReadSoundFileResponse',
                     arguments: [operationId, operationStatus, sound],
                 },
-
             },
             // Add as transferables to avoid copies between threads
             sound.map((array) => array.buffer)

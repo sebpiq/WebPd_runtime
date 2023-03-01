@@ -9,19 +9,19 @@
  *
  */
 
-import { FloatArray } from "../types"
-import { audioBufferToArray, fetchFile, fixSoundChannelCount } from "../utils"
+import { FloatArray } from '../types'
+import { audioBufferToArray, fetchFile, fixSoundChannelCount } from '../utils'
 
-const FILES: {[url: string]: FakeFile} = {}
-const STREAMS: {[operationId: number]: FakeStream} = {}
+const FILES: { [url: string]: FakeFile } = {}
+const STREAMS: { [operationId: number]: FakeStream } = {}
 
 interface FakeSoundFile {
-    type: 'sound',
+    type: 'sound'
     data: FloatArray[]
 }
 
 interface FakeBinaryFile {
-    type: 'binary',
+    type: 'binary'
     data: ArrayBuffer
 }
 
@@ -33,10 +33,7 @@ export class FakeStream {
     public frameCount: number
     public sound: FloatArray[]
 
-    constructor(
-        url: string,
-        sound: FloatArray[]
-    ) {
+    constructor(url: string, sound: FloatArray[]) {
         this.url = url
         this.sound = sound
         this.frameCount = sound[0].length
@@ -60,15 +57,15 @@ export const readSound = async (
     url: string,
     context: BaseAudioContext
 ): Promise<FloatArray[]> => {
-    let fakeFile = FILES[url] || await read(url)
-    switch(fakeFile.type) {
+    let fakeFile = FILES[url] || (await read(url))
+    switch (fakeFile.type) {
         case 'binary':
             const audioBuffer = await context.decodeAudioData(fakeFile.data)
             return audioBufferToArray(audioBuffer)
         case 'sound':
             // We copy the data here o it can be manipulated freely by the host.
             // e.g. if the buffer is sent as transferrable to the node we don't want the original to be transferred.
-            return fakeFile.data.map(array => array.slice())
+            return fakeFile.data.map((array) => array.slice())
     }
 }
 
@@ -79,19 +76,25 @@ const writeSound = async (sound: FloatArray[], url: string) => {
     }
 }
 
-const readStreamSound = async (operationId: number, url: string, channelCount: number, context: BaseAudioContext): Promise<FakeStream> => {
+const readStreamSound = async (
+    operationId: number,
+    url: string,
+    channelCount: number,
+    context: BaseAudioContext
+): Promise<FakeStream> => {
     const sound = await readSound(url, context)
     STREAMS[operationId] = new FakeStream(
         url,
-        fixSoundChannelCount(
-            sound, 
-            channelCount
-        )
+        fixSoundChannelCount(sound, channelCount)
     )
     return STREAMS[operationId]
 }
 
-const writeStreamSound = async (operationId: number, url: string, channelCount: number): Promise<FakeStream> => {
+const writeStreamSound = async (
+    operationId: number,
+    url: string,
+    channelCount: number
+): Promise<FakeStream> => {
     const emptySound: FloatArray[] = []
     for (let channel = 0; channel < channelCount; channel++) {
         emptySound.push(new Float32Array(0))
@@ -123,7 +126,9 @@ export const pullBlock = (stream: FakeStream, frameCount: number) => {
 
 export const pushBlock = (stream: FakeStream, block: FloatArray[]) => {
     stream.sound = stream.sound.map((channelData, channel) => {
-        const concatenated = new Float32Array(channelData.length + block[channel].length)
+        const concatenated = new Float32Array(
+            channelData.length + block[channel].length
+        )
         concatenated.set(channelData)
         concatenated.set(block[channel], channelData.length)
         return concatenated
@@ -133,5 +138,10 @@ export const pushBlock = (stream: FakeStream, block: FloatArray[]) => {
 }
 
 export default {
-    writeSound, readSound, readStreamSound, writeStreamSound, pullBlock, pushBlock
+    writeSound,
+    readSound,
+    readStreamSound,
+    writeStreamSound,
+    pullBlock,
+    pushBlock,
 }

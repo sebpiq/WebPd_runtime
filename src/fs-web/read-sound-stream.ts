@@ -21,7 +21,12 @@ export default async (
     if (payload.functionName === 'onOpenSoundReadStream') {
         const [operationId, url, [channelCount]] = payload.arguments
         try {
-            await fakeFs.readStreamSound(operationId, url, channelCount, node.context)
+            await fakeFs.readStreamSound(
+                operationId,
+                url,
+                channelCount,
+                node.context
+            )
         } catch (err) {
             console.error(err)
             node.port.postMessage({
@@ -34,14 +39,12 @@ export default async (
             return
         }
         streamLoop(node, operationId, 0)
-    
     } else if (payload.functionName === 'sendSoundStreamData_return') {
         const stream = getStream(payload.operationId)
         if (!stream) {
             throw new Error(`unknown stream ${payload.operationId}`)
         }
         streamLoop(node, payload.operationId, payload.returned)
-
     } else if (payload.functionName === 'closeSoundStream_return') {
         const stream = getStream(payload.operationId)
         if (stream) {
@@ -51,7 +54,7 @@ export default async (
 }
 
 const streamLoop = (
-    node: WebPdWorkletNode, 
+    node: WebPdWorkletNode,
     operationId: number,
     framesAvailableInEngine: number
 ) => {
@@ -78,7 +81,6 @@ const streamLoop = (
                         functionName: 'sendSoundStreamData',
                         arguments: [operationId, block],
                     },
-
                 },
                 // Add as transferables to avoid copies between threads
                 block.map((array) => array.buffer)

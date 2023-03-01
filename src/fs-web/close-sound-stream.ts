@@ -1,8 +1,7 @@
-import WebPdWorkletNode, { FsOnCloseSoundStream } from "../WebPdWorkletNode";
-import { killStream } from "./fake-filesystem";
+import WebPdWorkletNode, { FsOnCloseSoundStream } from '../WebPdWorkletNode'
+import { killStream } from './fake-filesystem'
 
-type CloseSoundStreamMessage =
-    | FsOnCloseSoundStream
+type CloseSoundStreamMessage = FsOnCloseSoundStream
 
 export default async (
     node: WebPdWorkletNode,

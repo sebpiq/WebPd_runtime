@@ -13,9 +13,7 @@ export const addModule = async (
 }
 
 // TODO : testing
-export const fetchFile = async (
-    url: string,
-) => {
+export const fetchFile = async (url: string) => {
     let response: Response
     try {
         response = await fetchRetry(url, { retries: 3 })
@@ -41,7 +39,7 @@ export const audioBufferToArray = (
 
 // TODO : testing
 export const fixSoundChannelCount = (
-    sound: Array<FloatArray>, 
+    sound: Array<FloatArray>,
     targetChannelCount: number
 ) => {
     if (sound.length === 0) {
