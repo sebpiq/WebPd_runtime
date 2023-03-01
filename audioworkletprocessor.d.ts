@@ -1,11 +1,11 @@
-import type { createEngine as _createEngine } from "@webpd/compiler-js/src/engine-assemblyscript/AssemblyScriptWasmEngine"
+import type { createAssemblyScriptWasmEngine } from "@webpd/compiler-js"
 import type { Engine } from "@webpd/compiler-js"
 import type { OutgoingMessage } from "./src/WebPdWorkletNode"
 
 // These declarations are for types to be correctly defined in WorkletProcessor .ts files.
 declare global {
     module AssemblyscriptWasmBindings {
-        const createEngine: typeof _createEngine
+        const createEngine: typeof createAssemblyScriptWasmEngine
     }
     
     // When transpiling TS even with module = None, TS generates some export code for esModuleInterop.
