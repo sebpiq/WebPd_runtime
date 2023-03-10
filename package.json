@@ -1,7 +1,7 @@
 {
-  "name": "@webpd/audioworklets",
+  "name": "@webpd/runtime",
   "version": "0.1.0",
-  "description": "TODO",
+  "description": "Runtime environment for WebPd",
   "type": "module",
   "main": "./dist/WebPd_audioworklets/index.js",
   "types": "./dist/types/index.d.ts",
@@ -18,7 +18,7 @@
     "url": "git+https://github.com/sebpiq/WebPd_dsp-graph.git"
   },
   "author": "Sébastien Piquemal",
-  "license": "BSD-2-Clause",
+  "license": "LGPL-3.0",
   "bugs": {
     "url": "https://github.com/sebpiq/WebPd_dsp-graph/issues"
   },
@@ -27,7 +27,7 @@
     "@rollup/plugin-typescript": "^10.0.1",
     "@types/audioworklet": "^0.0.36",
     "@types/jest": "^29.2.5",
-    "@webpd/compiler-js": "file:../WebPd_compiler-js",
+    "@webpd/compiler": "file:../WebPd_compiler",
     "@webpd/dev": "file:../WebPd_dev",
     "rollup": "^3.7.0",
     "rollup-plugin-string": "^3.0.0",
