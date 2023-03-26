@@ -18,13 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import { FS_OPERATION_SUCCESS } from '@webpd/compiler'
-import { fixSoundChannelCount } from '../utils'
+import { fixSoundChannelCount, resolveRelativeUrl } from '../utils'
 import WebPdWorkletNode, {
     FsOnWriteSoundFile,
     FsSendWriteSoundFileResponseReturn,
 } from '../WebPdWorkletNode'
 import { OperationStatus } from '../types'
 import fakeFs from './fake-filesystem'
+import { Settings } from './types'
 
 type WriteSoundFileMessage =
     | FsOnWriteSoundFile
@@ -32,12 +33,14 @@ type WriteSoundFileMessage =
 
 export default async (
     node: WebPdWorkletNode,
-    payload: WriteSoundFileMessage['payload']
+    payload: WriteSoundFileMessage['payload'],
+    settings: Settings,
 ) => {
     if (payload.functionName === 'onWriteSoundFile') {
         const [operationId, sound, url, [channelCount]] = payload.arguments
         const fixedSound = fixSoundChannelCount(sound, channelCount)
-        await fakeFs.writeSound(fixedSound, url)
+        const absoluteUrl = resolveRelativeUrl(settings.rootUrl, url)
+        await fakeFs.writeSound(fixedSound, absoluteUrl)
         let operationStatus: OperationStatus = FS_OPERATION_SUCCESS
         node.port.postMessage({
             type: 'fs',

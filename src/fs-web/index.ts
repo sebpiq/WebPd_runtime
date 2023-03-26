@@ -23,10 +23,12 @@ import readSoundFile from './read-sound-file'
 import readSoundStream from './read-sound-stream'
 import writeSoundFile from './write-sound-file'
 import writeSoundStream from './write-sound-stream'
+import { Settings } from './types'
 
 export default async (
     node: WebPdWorkletNode,
-    messageEvent: MessageEvent<IncomingMessage>
+    messageEvent: MessageEvent<IncomingMessage>,
+    settings: Settings,
 ) => {
     const message = messageEvent.data
     const { payload } = message
@@ -38,27 +40,27 @@ export default async (
         payload.functionName === 'onReadSoundFile' ||
         payload.functionName === 'sendReadSoundFileResponse_return'
     ) {
-        readSoundFile(node, payload)
+        readSoundFile(node, payload, settings)
     } else if (
         payload.functionName === 'onOpenSoundReadStream' ||
         payload.functionName === 'sendSoundStreamData_return'
     ) {
-        readSoundStream(node, payload)
+        readSoundStream(node, payload, settings)
     } else if (
         payload.functionName === 'onWriteSoundFile' ||
         payload.functionName === 'sendWriteSoundFileResponse_return'
     ) {
-        writeSoundFile(node, payload)
+        writeSoundFile(node, payload, settings)
     } else if (
         payload.functionName === 'onOpenSoundWriteStream' ||
         payload.functionName === 'onSoundStreamData'
     ) {
-        writeSoundStream(node, payload)
+        writeSoundStream(node, payload, settings)
     } else if (payload.functionName === 'closeSoundStream_return') {
-        writeSoundStream(node, payload)
-        readSoundStream(node, payload)
+        writeSoundStream(node, payload, settings)
+        readSoundStream(node, payload, settings)
     } else if (payload.functionName === 'onCloseSoundStream') {
-        closeSoundStream(node, payload)
+        closeSoundStream(node, payload, settings)
     } else {
         throw new Error(`Unknown callback ${(payload as any).functionName}`)
     }

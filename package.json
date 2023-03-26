@@ -1,40 +1,39 @@
 {
-  "name": "@webpd/runtime",
-  "version": "0.1.0",
-  "description": "Runtime environment for WebPd",
-  "type": "module",
-  "main": "./dist/WebPd_audioworklets/index.js",
-  "types": "./dist/types/index.d.ts",
-  "scripts": {
-    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
-    "rollup": "npx rollup --config rollup.mjs",
-    "transpile": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./transpile-javascript.ts",
-    "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
-    "eslint": "npm explore @webpd/dev -- npm run eslint $(pwd)/src",
-    "all": "npm run test-bail && npm run prettier && npm run eslint"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sebpiq/WebPd_dsp-graph.git"
-  },
-  "author": "Sébastien Piquemal",
-  "license": "LGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/sebpiq/WebPd_dsp-graph/issues"
-  },
-  "homepage": "https://github.com/sebpiq/WebPd_dsp-graph#readme",
-  "devDependencies": {
-    "@rollup/plugin-typescript": "^10.0.1",
-    "@types/audioworklet": "^0.0.36",
-    "@types/jest": "^29.2.5",
-    "@webpd/compiler": "file:../WebPd_compiler",
-    "@webpd/dev": "file:../WebPd_dev",
-    "rollup": "^3.7.0",
-    "rollup-plugin-string": "^3.0.0",
-    "ts-node": "^10.9.1",
-    "tslib": "^2.4.0"
-  },
-  "dependencies": {
-    "fetch-retry": "^5.0.3"
-  }
+    "name": "@webpd/runtime",
+    "version": "0.1.0",
+    "description": "Runtime environment for WebPd",
+    "main": "./dist/WebPd_runtime/index.js",
+    "types": "./dist/types/index.d.ts",
+    "type": "module",
+    "license": "LGPL-3.0",
+    "author": "Sébastien Piquemal",
+    "scripts": {
+        "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
+        "build:dist": "npx rollup --config rollup.mjs",
+        "build:worklet-processor": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./transpile-javascript.ts",
+        "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
+        "eslint": "npm explore @webpd/dev -- npm run eslint $(pwd)/src"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sebpiq/WebPd_runtime.git"
+    },
+    "bugs": {
+        "url": "https://github.com/sebpiq/WebPd_runtime/issues"
+    },
+    "homepage": "https://github.com/sebpiq/WebPd_runtime#readme",
+    "dependencies": {
+        "fetch-retry": "^5.0.3"
+    },
+    "devDependencies": {
+        "@rollup/plugin-typescript": "^10.0.1",
+        "@types/audioworklet": "^0.0.36",
+        "@types/jest": "^29.2.5",
+        "@webpd/compiler": "file:../WebPd_compiler",
+        "@webpd/dev": "file:../WebPd_dev",
+        "rollup": "^3.7.0",
+        "rollup-plugin-string": "^3.0.0",
+        "ts-node": "^10.9.1",
+        "tslib": "^2.4.0"
+    }
 }

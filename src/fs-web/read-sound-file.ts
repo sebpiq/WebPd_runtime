@@ -18,13 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
-import { fixSoundChannelCount } from '../utils'
+import { fixSoundChannelCount, resolveRelativeUrl } from '../utils'
 import fakeFs from './fake-filesystem'
 import WebPdWorkletNode, {
     FsOnReadSoundFile,
     FsSendReadSoundFileResponseReturn,
 } from '../WebPdWorkletNode'
 import { FloatArray, OperationStatus } from '../types'
+import { Settings } from './types'
 
 type ReadSoundFileMessage =
     | FsOnReadSoundFile
@@ -32,15 +33,17 @@ type ReadSoundFileMessage =
 
 export default async (
     node: WebPdWorkletNode,
-    payload: ReadSoundFileMessage['payload']
+    payload: ReadSoundFileMessage['payload'],
+    settings: Settings,
 ) => {
     if (payload.functionName === 'onReadSoundFile') {
         const [operationId, url, [channelCount]] = payload.arguments
+        const absoluteUrl = resolveRelativeUrl(settings.rootUrl, url)
         let operationStatus: OperationStatus = FS_OPERATION_SUCCESS
         let sound: FloatArray[] = null
 
         try {
-            sound = await fakeFs.readSound(url, node.context)
+            sound = await fakeFs.readSound(absoluteUrl, node.context)
         } catch (err) {
             operationStatus = FS_OPERATION_FAILURE
             console.error(err)

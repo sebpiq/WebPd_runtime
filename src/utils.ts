@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022-2023 Sébastien Piquemal <sebpiq@protonmail.com>, Chris McCormick.
  *
- * This file is part of WebPd 
+ * This file is part of WebPd
  * (see https://github.com/sebpiq/WebPd).
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,11 @@ import { FloatArray, FloatArrayType } from './types'
 
 const fetchRetry = makeFetchRetry(fetch)
 
+/**
+ * Note : the audio worklet feature is available only in secure context.
+ * This function will fail when used in insecure context (non-https, etc ...)
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet
+ */
 export const addModule = async (
     context: AudioContext,
     processorCode: string
@@ -71,6 +76,31 @@ export const fixSoundChannelCount = (
         fixedSound.push(new floatArrayType(frameCount))
     }
     return fixedSound
+}
+
+export const urlDirName = (patchUrl: string): string => {
+    if (isExternalUrl(patchUrl)) {
+        return new URL('.', patchUrl).href
+    } else {
+        return new URL('.', new URL(patchUrl, document.URL).href).href
+    }
+}
+
+export const resolveRelativeUrl = (rootUrl: string, relativeUrl: string) => {
+    return new URL(relativeUrl, rootUrl).href
+}
+
+// REF : https://stackoverflow.com/questions/10687099/how-to-test-if-a-url-string-is-absolute-or-relative
+export const isExternalUrl = (urlString: string) => {
+    try {
+        const url = new URL(urlString)
+        if (url.origin !== new URL(document.URL, document.baseURI).origin) {
+            return true
+        }
+    } catch (_e) {
+        new URL(urlString, window.document.baseURI)
+    }
+    return false
 }
 
 export class FileError extends Error {

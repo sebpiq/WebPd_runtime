@@ -18,12 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
+import { resolveRelativeUrl } from '../utils'
 import WebPdWorkletNode, {
     FsOnOpenSoundReadStream,
     FsCloseSoundStreamReturn,
     FsSendSoundStreamDataReturn,
 } from '../WebPdWorkletNode'
 import fakeFs, { getStream, killStream, pullBlock } from './fake-filesystem'
+import { Settings } from './types'
 
 const BUFFER_HIGH = 10 * 44100
 const BUFFER_LOW = BUFFER_HIGH / 2
@@ -35,14 +37,16 @@ type SoundReadStreamMessage =
 
 export default async (
     node: WebPdWorkletNode,
-    payload: SoundReadStreamMessage['payload']
+    payload: SoundReadStreamMessage['payload'],
+    settings: Settings,
 ) => {
     if (payload.functionName === 'onOpenSoundReadStream') {
         const [operationId, url, [channelCount]] = payload.arguments
         try {
+            const absoluteUrl = resolveRelativeUrl(settings.rootUrl, url)
             await fakeFs.readStreamSound(
                 operationId,
-                url,
+                absoluteUrl,
                 channelCount,
                 node.context
             )

@@ -19,12 +19,14 @@
  */
 import WebPdWorkletNode, { FsOnCloseSoundStream } from '../WebPdWorkletNode'
 import { killStream } from './fake-filesystem'
+import { Settings } from './types'
 
 type CloseSoundStreamMessage = FsOnCloseSoundStream
 
 export default async (
     node: WebPdWorkletNode,
-    payload: CloseSoundStreamMessage['payload']
+    payload: CloseSoundStreamMessage['payload'],
+    settings: Settings,
 ) => {
     if (payload.functionName === 'onCloseSoundStream') {
         killStream(payload.arguments[0])
