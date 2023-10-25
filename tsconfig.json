@@ -3,6 +3,7 @@
     "include": [
         "src",
         "@types/**/*.d.ts",
-        "*.ts"
+        "*.ts",
+        "WebPdWorkletProcessor.d.ts",
     ]
 }

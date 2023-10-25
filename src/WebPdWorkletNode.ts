@@ -19,7 +19,7 @@
  */
 
 import { Engine } from '@webpd/compiler'
-import { Message } from '@webpd/compiler/src/types'
+import { Message } from '@webpd/compiler/src/run/types'
 
 // TODO : manage transferables
 export default class WebPdWorkletNode extends AudioWorkletNode {
