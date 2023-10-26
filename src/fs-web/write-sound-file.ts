@@ -19,13 +19,14 @@
  */
 import { FS_OPERATION_SUCCESS } from '@webpd/compiler'
 import { fixSoundChannelCount, resolveRelativeUrl } from '../utils'
-import WebPdWorkletNode, {
+import WebPdWorkletNode from '../WebPdWorkletNode'
+import {
     FsOnWriteSoundFile,
-    FsSendWriteSoundFileResponseReturn,
-} from '../WebPdWorkletNode'
+    FsSendWriteSoundFileResponseReturn
+} from '../types'
 import { OperationStatus } from '../types'
 import fakeFs from './fake-filesystem'
-import { Settings } from './types'
+import { FsHandlerSettings } from './types'
 
 type WriteSoundFileMessage =
     | FsOnWriteSoundFile
@@ -34,7 +35,7 @@ type WriteSoundFileMessage =
 export default async (
     node: WebPdWorkletNode,
     payload: WriteSoundFileMessage['payload'],
-    settings: Settings,
+    settings: FsHandlerSettings,
 ) => {
     if (payload.functionName === 'onWriteSoundFile') {
         const [operationId, sound, url, [channelCount]] = payload.arguments

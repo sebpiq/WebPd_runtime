@@ -17,7 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
+import { Engine, FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
+import { Message } from '@webpd/compiler/src/run/types'
 
 export type FloatArrayType = typeof Float32Array | typeof Float64Array
 
@@ -26,3 +27,161 @@ export type FloatArray = Float32Array | Float64Array
 export type OperationStatus =
     | typeof FS_OPERATION_FAILURE
     | typeof FS_OPERATION_SUCCESS
+
+interface SetWasmMessage {
+    type: 'code:WASM'
+    payload: {
+        wasmBuffer: ArrayBuffer
+    }
+}
+interface SetJsMessage {
+    type: 'code:JS'
+    payload: {
+        jsCode: string
+    }
+}
+interface InletCallerMessage {
+    type: 'inletCaller'
+    payload: {
+        nodeId: string
+        portletId: string
+        message: Message
+    }
+}
+interface FsReadSoundFileResponse {
+    type: 'fs'
+    payload: {
+        functionName: 'sendReadSoundFileResponse'
+        arguments: Parameters<Engine['fs']['sendReadSoundFileResponse']>
+    }
+}
+interface FsWriteSoundFileResponse {
+    type: 'fs'
+    payload: {
+        functionName: 'sendWriteSoundFileResponse'
+        arguments: Parameters<Engine['fs']['sendWriteSoundFileResponse']>
+    }
+}
+interface FsSoundStreamData {
+    type: 'fs'
+    payload: {
+        functionName: 'sendSoundStreamData'
+        arguments: Parameters<Engine['fs']['sendSoundStreamData']>
+    }
+}
+interface FsSoundStreamClose {
+    type: 'fs'
+    payload: {
+        functionName: 'closeSoundStream'
+        arguments: Parameters<Engine['fs']['closeSoundStream']>
+    }
+}
+interface DestroyMessage {
+    type: 'destroy'
+    payload: {}
+}
+
+export type OutgoingMessage = SetWasmMessage |
+    SetJsMessage |
+    FsReadSoundFileResponse |
+    FsSoundStreamData |
+    FsSoundStreamClose |
+    FsWriteSoundFileResponse |
+    DestroyMessage |
+    InletCallerMessage
+
+export interface FsOnReadSoundFile {
+    type: 'fs'
+    payload: {
+        functionName: 'onReadSoundFile'
+        arguments: Parameters<Engine['fs']['onReadSoundFile']>
+    }
+}
+
+export interface FsOnWriteSoundFile {
+    type: 'fs'
+    payload: {
+        functionName: 'onWriteSoundFile'
+        arguments: Parameters<Engine['fs']['onWriteSoundFile']>
+    }
+}
+
+export interface FsOnOpenSoundReadStream {
+    type: 'fs'
+    payload: {
+        functionName: 'onOpenSoundReadStream'
+        arguments: Parameters<Engine['fs']['onOpenSoundReadStream']>
+    }
+}
+
+export interface FsOnOpenSoundWriteStream {
+    type: 'fs'
+    payload: {
+        functionName: 'onOpenSoundWriteStream'
+        arguments: Parameters<Engine['fs']['onOpenSoundWriteStream']>
+    }
+}
+
+export interface FsOnSoundStreamData {
+    type: 'fs'
+    payload: {
+        functionName: 'onSoundStreamData'
+        arguments: Parameters<Engine['fs']['onSoundStreamData']>
+    }
+}
+
+export interface FsOnCloseSoundStream {
+    type: 'fs'
+    payload: {
+        functionName: 'onCloseSoundStream'
+        arguments: Parameters<Engine['fs']['onCloseSoundStream']>
+    }
+}
+
+export interface FsSendSoundStreamDataReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'sendSoundStreamData_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['sendSoundStreamData']>
+    }
+}
+
+export interface FsCloseSoundStreamReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'closeSoundStream_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['closeSoundStream']>
+    }
+}
+
+export interface FsSendReadSoundFileResponseReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'sendReadSoundFileResponse_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['sendReadSoundFileResponse']>
+    }
+}
+
+export interface FsSendWriteSoundFileResponseReturn {
+    type: 'fs'
+    payload: {
+        functionName: 'sendWriteSoundFileResponse_return'
+        operationId: number
+        returned: ReturnType<Engine['fs']['sendWriteSoundFileResponse']>
+    }
+}
+
+export type IncomingMessage = FsOnReadSoundFile |
+    FsOnWriteSoundFile |
+    FsOnOpenSoundReadStream |
+    FsOnOpenSoundWriteStream |
+    FsOnSoundStreamData |
+    FsOnCloseSoundStream |
+    FsSendSoundStreamDataReturn |
+    FsCloseSoundStreamReturn |
+    FsSendReadSoundFileResponseReturn |
+    FsSendWriteSoundFileResponseReturn
+

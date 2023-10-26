@@ -18,18 +18,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import { resolveRelativeUrl } from '../utils'
-import WebPdWorkletNode, {
+import WebPdWorkletNode from '../WebPdWorkletNode'
+import {
     FsCloseSoundStreamReturn,
     FsOnOpenSoundWriteStream,
-    FsOnSoundStreamData,
-} from '../WebPdWorkletNode'
+    FsOnSoundStreamData
+} from '../types'
 import fakeFs, {
-    FakeStream,
     getStream,
     killStream,
     pushBlock,
 } from './fake-filesystem'
-import { Settings } from './types'
+import { FsHandlerSettings } from './types'
 
 type OpenSoundWriteStreamMessage =
     | FsOnOpenSoundWriteStream
@@ -39,7 +39,7 @@ type OpenSoundWriteStreamMessage =
 export default async (
     _: WebPdWorkletNode,
     payload: OpenSoundWriteStreamMessage['payload'],
-    settings: Settings,
+    settings: FsHandlerSettings,
 ) => {
     if (payload.functionName === 'onOpenSoundWriteStream') {
         const [operationId, url, [channelCount]] = payload.arguments

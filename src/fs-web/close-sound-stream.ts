@@ -17,16 +17,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import WebPdWorkletNode, { FsOnCloseSoundStream } from '../WebPdWorkletNode'
+import WebPdWorkletNode from '../WebPdWorkletNode'
+import { FsOnCloseSoundStream } from '../types'
 import { killStream } from './fake-filesystem'
-import { Settings } from './types'
+import { FsHandlerSettings } from './types'
 
 type CloseSoundStreamMessage = FsOnCloseSoundStream
 
 export default async (
-    node: WebPdWorkletNode,
+    _: WebPdWorkletNode,
     payload: CloseSoundStreamMessage['payload'],
-    settings: Settings,
+    __: FsHandlerSettings,
 ) => {
     if (payload.functionName === 'onCloseSoundStream') {
         killStream(payload.arguments[0])

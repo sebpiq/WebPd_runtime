@@ -17,18 +17,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import WebPdWorkletNode, { IncomingMessage } from '../WebPdWorkletNode'
+import WebPdWorkletNode from '../WebPdWorkletNode'
+import { IncomingMessage } from '../types'
 import closeSoundStream from './close-sound-stream'
 import readSoundFile from './read-sound-file'
 import readSoundStream from './read-sound-stream'
 import writeSoundFile from './write-sound-file'
 import writeSoundStream from './write-sound-stream'
-import { Settings } from './types'
+import { FsHandlerSettings } from './types'
 
 export default async (
     node: WebPdWorkletNode,
     messageEvent: MessageEvent<IncomingMessage>,
-    settings: Settings,
+    settings: FsHandlerSettings,
 ) => {
     const message = messageEvent.data
     const { payload } = message

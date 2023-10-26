@@ -19,13 +19,14 @@
  */
 import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
 import { resolveRelativeUrl } from '../utils'
-import WebPdWorkletNode, {
+import WebPdWorkletNode from '../WebPdWorkletNode'
+import {
     FsOnOpenSoundReadStream,
     FsCloseSoundStreamReturn,
-    FsSendSoundStreamDataReturn,
-} from '../WebPdWorkletNode'
+    FsSendSoundStreamDataReturn
+} from '../types'
 import fakeFs, { getStream, killStream, pullBlock } from './fake-filesystem'
-import { Settings } from './types'
+import { FsHandlerSettings } from './types'
 
 const BUFFER_HIGH = 10 * 44100
 const BUFFER_LOW = BUFFER_HIGH / 2
@@ -38,7 +39,7 @@ type SoundReadStreamMessage =
 export default async (
     node: WebPdWorkletNode,
     payload: SoundReadStreamMessage['payload'],
-    settings: Settings,
+    settings: FsHandlerSettings,
 ) => {
     if (payload.functionName === 'onOpenSoundReadStream') {
         const [operationId, url, [channelCount]] = payload.arguments

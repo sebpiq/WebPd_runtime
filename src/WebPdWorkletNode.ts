@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022-2023 Sébastien Piquemal <sebpiq@protonmail.com>, Chris McCormick.
  *
- * This file is part of WebPd 
+ * This file is part of WebPd
  * (see https://github.com/sebpiq/WebPd).
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Engine } from '@webpd/compiler'
-import { Message } from '@webpd/compiler/src/run/types'
+import { IncomingMessage, OutgoingMessage } from './types'
+import _WebPdWorkletProcessorCode from './WebPdWorkletProcessor.generated'
+import AssemblyScriptWasmBindingsCode from '@webpd/compiler/dist/assemblyscript-wasm-bindings.iife'
+import JavaScriptBindingsCode from '@webpd/compiler/dist/javascript-bindings.iife'
+import { addModule } from './utils'
+
+export type WebPdWorkletNodeMessageHandler = (
+    messageEvent: MessageEvent<IncomingMessage>
+) => void
+
+interface WebPdWorkletNodeMessagePort extends MessagePort {
+    postMessage(message: OutgoingMessage, transfer: Transferable[]): void
+    postMessage(
+        message: OutgoingMessage,
+        options?: StructuredSerializeOptions
+    ): void
+    onmessage: (messageEvent: MessageEvent<IncomingMessage>) => void
+}
 
 // TODO : manage transferables
 export default class WebPdWorkletNode extends AudioWorkletNode {
@@ -40,177 +56,10 @@ export default class WebPdWorkletNode extends AudioWorkletNode {
     }
 }
 
-interface WebPdWorkletNodeMessagePort extends MessagePort {
-    postMessage(message: OutgoingMessage, transfer: Transferable[]): void
-    postMessage(
-        message: OutgoingMessage,
-        options?: StructuredSerializeOptions
-    ): void
-    onmessage(messageEvent: MessageEvent<IncomingMessage>): void
+// Concatenate WorkletProcessor code with the Wasm bindings it needs
+const WEBPD_WORKLET_PROCESSOR_CODE =
+    AssemblyScriptWasmBindingsCode + ';\n' + JavaScriptBindingsCode + ';\n' + _WebPdWorkletProcessorCode
+
+export const registerWebPdWorkletNode = (context: AudioContext) => {
+    return addModule(context, WEBPD_WORKLET_PROCESSOR_CODE)
 }
-
-interface SetWasmMessage {
-    type: 'code:WASM'
-    payload: {
-        wasmBuffer: ArrayBuffer
-    }
-}
-
-interface SetJsMessage {
-    type: 'code:JS'
-    payload: {
-        jsCode: string
-    }
-}
-
-interface InletCallerMessage {
-    type: 'inletCaller'
-    payload: {
-        nodeId: string
-        portletId: string
-        message: Message
-    }
-}
-
-interface FsReadSoundFileResponse {
-    type: 'fs'
-    payload: {
-        functionName: 'sendReadSoundFileResponse'
-        arguments: Parameters<Engine['fs']['sendReadSoundFileResponse']>
-    }
-}
-
-interface FsWriteSoundFileResponse {
-    type: 'fs'
-    payload: {
-        functionName: 'sendWriteSoundFileResponse'
-        arguments: Parameters<Engine['fs']['sendWriteSoundFileResponse']>
-    }
-}
-
-interface FsSoundStreamData {
-    type: 'fs'
-    payload: {
-        functionName: 'sendSoundStreamData'
-        arguments: Parameters<Engine['fs']['sendSoundStreamData']>
-    }
-}
-
-interface FsSoundStreamClose {
-    type: 'fs'
-    payload: {
-        functionName: 'closeSoundStream'
-        arguments: Parameters<Engine['fs']['closeSoundStream']>
-    }
-}
-
-interface DestroyMessage {
-    type: 'destroy'
-    payload: {}
-}
-
-export type OutgoingMessage =
-    | SetWasmMessage
-    | SetJsMessage
-    | FsReadSoundFileResponse
-    | FsSoundStreamData
-    | FsSoundStreamClose
-    | FsWriteSoundFileResponse
-    | DestroyMessage
-    | InletCallerMessage
-
-export interface FsOnReadSoundFile {
-    type: 'fs'
-    payload: {
-        functionName: 'onReadSoundFile'
-        arguments: Parameters<Engine['fs']['onReadSoundFile']>
-    }
-}
-
-export interface FsOnWriteSoundFile {
-    type: 'fs'
-    payload: {
-        functionName: 'onWriteSoundFile'
-        arguments: Parameters<Engine['fs']['onWriteSoundFile']>
-    }
-}
-
-export interface FsOnOpenSoundReadStream {
-    type: 'fs'
-    payload: {
-        functionName: 'onOpenSoundReadStream'
-        arguments: Parameters<Engine['fs']['onOpenSoundReadStream']>
-    }
-}
-
-export interface FsOnOpenSoundWriteStream {
-    type: 'fs'
-    payload: {
-        functionName: 'onOpenSoundWriteStream'
-        arguments: Parameters<Engine['fs']['onOpenSoundWriteStream']>
-    }
-}
-
-export interface FsOnSoundStreamData {
-    type: 'fs'
-    payload: {
-        functionName: 'onSoundStreamData'
-        arguments: Parameters<Engine['fs']['onSoundStreamData']>
-    }
-}
-
-export interface FsOnCloseSoundStream {
-    type: 'fs'
-    payload: {
-        functionName: 'onCloseSoundStream'
-        arguments: Parameters<Engine['fs']['onCloseSoundStream']>
-    }
-}
-
-export interface FsSendSoundStreamDataReturn {
-    type: 'fs'
-    payload: {
-        functionName: 'sendSoundStreamData_return'
-        operationId: number
-        returned: ReturnType<Engine['fs']['sendSoundStreamData']>
-    }
-}
-
-export interface FsCloseSoundStreamReturn {
-    type: 'fs'
-    payload: {
-        functionName: 'closeSoundStream_return'
-        operationId: number
-        returned: ReturnType<Engine['fs']['closeSoundStream']>
-    }
-}
-
-export interface FsSendReadSoundFileResponseReturn {
-    type: 'fs'
-    payload: {
-        functionName: 'sendReadSoundFileResponse_return'
-        operationId: number
-        returned: ReturnType<Engine['fs']['sendReadSoundFileResponse']>
-    }
-}
-
-export interface FsSendWriteSoundFileResponseReturn {
-    type: 'fs'
-    payload: {
-        functionName: 'sendWriteSoundFileResponse_return'
-        operationId: number
-        returned: ReturnType<Engine['fs']['sendWriteSoundFileResponse']>
-    }
-}
-
-export type IncomingMessage =
-    | FsOnReadSoundFile
-    | FsOnWriteSoundFile
-    | FsOnOpenSoundReadStream
-    | FsOnOpenSoundWriteStream
-    | FsOnSoundStreamData
-    | FsOnCloseSoundStream
-    | FsSendSoundStreamDataReturn
-    | FsCloseSoundStreamReturn
-    | FsSendReadSoundFileResponseReturn
-    | FsSendWriteSoundFileResponseReturn
