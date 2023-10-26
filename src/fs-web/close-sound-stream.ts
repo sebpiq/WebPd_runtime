@@ -27,7 +27,7 @@ type CloseSoundStreamMessage = FsOnCloseSoundStream
 export default async (
     _: WebPdWorkletNode,
     payload: CloseSoundStreamMessage['payload'],
-    __: FsHandlerSettings,
+    __: FsHandlerSettings
 ) => {
     if (payload.functionName === 'onCloseSoundStream') {
         killStream(payload.arguments[0])

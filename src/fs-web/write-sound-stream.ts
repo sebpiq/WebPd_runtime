@@ -22,13 +22,9 @@ import WebPdWorkletNode from '../WebPdWorkletNode'
 import {
     FsCloseSoundStreamReturn,
     FsOnOpenSoundWriteStream,
-    FsOnSoundStreamData
+    FsOnSoundStreamData,
 } from '../types'
-import fakeFs, {
-    getStream,
-    killStream,
-    pushBlock,
-} from './fake-filesystem'
+import fakeFs, { getStream, killStream, pushBlock } from './fake-filesystem'
 import { FsHandlerSettings } from './types'
 
 type OpenSoundWriteStreamMessage =
@@ -39,7 +35,7 @@ type OpenSoundWriteStreamMessage =
 export default async (
     _: WebPdWorkletNode,
     payload: OpenSoundWriteStreamMessage['payload'],
-    settings: FsHandlerSettings,
+    settings: FsHandlerSettings
 ) => {
     if (payload.functionName === 'onOpenSoundWriteStream') {
         const [operationId, url, [channelCount]] = payload.arguments

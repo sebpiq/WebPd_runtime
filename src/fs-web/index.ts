@@ -29,7 +29,7 @@ import { FsHandlerSettings } from './types'
 export default async (
     node: WebPdWorkletNode,
     messageEvent: MessageEvent<IncomingMessage>,
-    settings: FsHandlerSettings,
+    settings: FsHandlerSettings
 ) => {
     const message = messageEvent.data
     const { payload } = message

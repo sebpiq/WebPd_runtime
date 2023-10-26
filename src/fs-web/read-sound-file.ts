@@ -21,10 +21,7 @@ import { FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
 import { fixSoundChannelCount, resolveRelativeUrl } from '../utils'
 import fakeFs from './fake-filesystem'
 import WebPdWorkletNode from '../WebPdWorkletNode'
-import {
-    FsOnReadSoundFile,
-    FsSendReadSoundFileResponseReturn
-} from '../types'
+import { FsOnReadSoundFile, FsSendReadSoundFileResponseReturn } from '../types'
 import { FloatArray, OperationStatus } from '../types'
 import { FsHandlerSettings } from './types'
 
@@ -35,7 +32,7 @@ type ReadSoundFileMessage =
 export default async (
     node: WebPdWorkletNode,
     payload: ReadSoundFileMessage['payload'],
-    settings: FsHandlerSettings,
+    settings: FsHandlerSettings
 ) => {
     if (payload.functionName === 'onReadSoundFile') {
         const [operationId, url, [channelCount]] = payload.arguments

@@ -17,7 +17,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import { Engine, FS_OPERATION_FAILURE, FS_OPERATION_SUCCESS } from '@webpd/compiler'
+import {
+    Engine,
+    FS_OPERATION_FAILURE,
+    FS_OPERATION_SUCCESS,
+} from '@webpd/compiler'
 import { Message } from '@webpd/compiler/src/run/types'
 
 export type FloatArrayType = typeof Float32Array | typeof Float64Array
@@ -81,14 +85,15 @@ interface DestroyMessage {
     payload: {}
 }
 
-export type OutgoingMessage = SetWasmMessage |
-    SetJsMessage |
-    FsReadSoundFileResponse |
-    FsSoundStreamData |
-    FsSoundStreamClose |
-    FsWriteSoundFileResponse |
-    DestroyMessage |
-    InletCallerMessage
+export type OutgoingMessage =
+    | SetWasmMessage
+    | SetJsMessage
+    | FsReadSoundFileResponse
+    | FsSoundStreamData
+    | FsSoundStreamClose
+    | FsWriteSoundFileResponse
+    | DestroyMessage
+    | InletCallerMessage
 
 export interface FsOnReadSoundFile {
     type: 'fs'
@@ -174,14 +179,14 @@ export interface FsSendWriteSoundFileResponseReturn {
     }
 }
 
-export type IncomingMessage = FsOnReadSoundFile |
-    FsOnWriteSoundFile |
-    FsOnOpenSoundReadStream |
-    FsOnOpenSoundWriteStream |
-    FsOnSoundStreamData |
-    FsOnCloseSoundStream |
-    FsSendSoundStreamDataReturn |
-    FsCloseSoundStreamReturn |
-    FsSendReadSoundFileResponseReturn |
-    FsSendWriteSoundFileResponseReturn
-
+export type IncomingMessage =
+    | FsOnReadSoundFile
+    | FsOnWriteSoundFile
+    | FsOnOpenSoundReadStream
+    | FsOnOpenSoundWriteStream
+    | FsOnSoundStreamData
+    | FsOnCloseSoundStream
+    | FsSendSoundStreamDataReturn
+    | FsCloseSoundStreamReturn
+    | FsSendReadSoundFileResponseReturn
+    | FsSendWriteSoundFileResponseReturn
