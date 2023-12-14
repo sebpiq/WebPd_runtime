@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022-2023 Sébastien Piquemal <sebpiq@protonmail.com>, Chris McCormick.
  *
- * This file is part of WebPd 
+ * This file is part of WebPd
  * (see https://github.com/sebpiq/WebPd).
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,53 +24,46 @@ const FS_CALLBACK_NAMES = [
     'onOpenSoundWriteStream',
     'onSoundStreamData',
     'onCloseSoundStream',
-]
+];
 class WasmWorkletProcessor extends AudioWorkletProcessor {
     constructor() {
-        super()
-        this.port.onmessage = this.onMessage.bind(this)
+        super();
+        this.port.onmessage = this.onMessage.bind(this);
         this.settings = {
             blockSize: null,
             sampleRate,
-        }
-        this.dspConfigured = false
-        this.engine = null
+        };
+        this.dspConfigured = false;
+        this.engine = null;
     }
     process(inputs, outputs) {
-        const output = outputs[0]
-        const input = inputs[0]
+        const output = outputs[0];
+        const input = inputs[0];
         if (!this.dspConfigured) {
             if (!this.engine) {
-                return true
+                return true;
             }
-            this.settings.blockSize = output[0].length
-            this.engine.configure(
-                this.settings.sampleRate,
-                this.settings.blockSize
-            )
-            this.dspConfigured = true
+            this.settings.blockSize = output[0].length;
+            this.engine.configure(this.settings.sampleRate, this.settings.blockSize);
+            this.dspConfigured = true;
         }
-        this.engine.loop(input, output)
-        return true
+        this.engine.loop(input, output);
+        return true;
     }
     onMessage(messageEvent) {
-        const message = messageEvent.data
+        const message = messageEvent.data;
         switch (message.type) {
             case 'code:WASM':
-                this.setWasm(message.payload.wasmBuffer)
-                break
+                this.setWasm(message.payload.wasmBuffer);
+                break;
             case 'code:JS':
-                this.setJsCode(message.payload.jsCode)
-                break
-            case 'inletCaller':
-                this.engine.inletCallers[message.payload.nodeId][
-                    message.payload.portletId
-                ](message.payload.message)
-                break
+                this.setJsCode(message.payload.jsCode);
+                break;
+            case 'io:messageReceiver':
+                this.engine.io.messageReceivers[message.payload.nodeId][message.payload.portletId](message.payload.message);
+                break;
             case 'fs':
-                const returned = this.engine.fs[
-                    message.payload.functionName
-                ].apply(null, message.payload.arguments)
+                const returned = this.engine.fs[message.payload.functionName].apply(null, message.payload.arguments);
                 this.port.postMessage({
                     type: 'fs',
                     payload: {
@@ -78,27 +71,26 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                         operationId: message.payload.arguments[0],
                         returned,
                     },
-                })
-                break
+                });
+                break;
             case 'destroy':
-                this.destroy()
-                break
+                this.destroy();
+                break;
             default:
-                new Error(`unknown message type ${message.type}`)
+                new Error(`unknown message type ${message.type}`);
         }
     }
     // TODO : control for channelCount of wasmModule
     setWasm(wasmBuffer) {
-        return AssemblyScriptWasmBindings.createEngine(wasmBuffer).then(
-            (engine) => this.setEngine(engine)
-        )
+        return AssemblyScriptWasmBindings.createEngine(wasmBuffer).then((engine) => this.setEngine(engine));
     }
     setJsCode(code) {
-        const engine = JavaScriptBindings.createEngine(code)
-        this.setEngine(engine)
+        const engine = JavaScriptBindings.createEngine(code);
+        this.setEngine(engine);
     }
     setEngine(engine) {
         FS_CALLBACK_NAMES.forEach((functionName) => {
+            ;
             engine.fs[functionName] = (...args) => {
                 // We don't use transferables, because that would imply reallocating each time new array in the engine.
                 this.port.postMessage({
@@ -107,14 +99,14 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                         functionName,
                         arguments: args,
                     },
-                })
-            }
-        })
-        this.engine = engine
-        this.dspConfigured = false
+                });
+            };
+        });
+        this.engine = engine;
+        this.dspConfigured = false;
     }
     destroy() {
-        this.process = () => false
+        this.process = () => false;
     }
 }
-registerProcessor('webpd-node', WasmWorkletProcessor)
+registerProcessor('webpd-node', WasmWorkletProcessor);

@@ -44,8 +44,8 @@ interface SetJsMessage {
         jsCode: string
     }
 }
-interface InletCallerMessage {
-    type: 'inletCaller'
+interface IoMessageReceiver {
+    type: 'io:messageReceiver'
     payload: {
         nodeId: string
         portletId: string
@@ -93,7 +93,7 @@ export type OutgoingMessage =
     | FsSoundStreamClose
     | FsWriteSoundFileResponse
     | DestroyMessage
-    | InletCallerMessage
+    | IoMessageReceiver
 
 export interface FsOnReadSoundFile {
     type: 'fs'

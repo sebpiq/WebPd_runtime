@@ -80,8 +80,8 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.setJsCode(message.payload.jsCode)
                 break
 
-            case 'inletCaller':
-                this.engine.inletCallers[message.payload.nodeId][
+            case 'io:messageReceiver':
+                this.engine.io.messageReceivers[message.payload.nodeId][
                     message.payload.portletId
                 ](message.payload.message)
                 break

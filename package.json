@@ -11,6 +11,7 @@
         "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
         "build:dist": "npx rollup --config rollup.mjs",
         "build:worklet-processor": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./transpile-javascript.ts",
+        "build:all": "npm run build:dist && npm run build:worklet-processor",
         "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
         "eslint": "npm explore @webpd/dev -- npm run eslint $(pwd)/src"
     },
