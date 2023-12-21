@@ -1,7 +1,7 @@
 import type { createAssemblyScriptWasmEngine } from "@webpd/compiler"
 import type { createJavaScriptEngine } from "@webpd/compiler"
 import type { Engine } from "@webpd/compiler"
-import type { OutgoingMessage } from './src/types'
+import type { OutgoingMessage } from './types'
 
 // These declarations are for types to be correctly defined in WorkletProcessor .ts files.
 declare global {
