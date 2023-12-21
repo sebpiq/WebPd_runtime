@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 const { transpileModule } = ts
 
 const WORKLET_PROCESSOR_TS_CODE = readFileSync('./src/WebPdWorkletProcessor.ts').toString('utf-8')
-const WORKLET_PROCESSOR_JS_PATH = './src/WebPdWorkletProcessor.generated.js'
+const WORKLET_PROCESSOR_JS_PATH = './src/assets/WebPdWorkletProcessor.js.txt'
 
 const TRANSPILATION_SETTINGS: ts.TranspileOptions = {
     compilerOptions: {

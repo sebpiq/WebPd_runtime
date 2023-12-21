@@ -10,7 +10,7 @@
     "scripts": {
         "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
         "build:dist": "npx rollup --config configs/dist.rollup.mjs",
-        "build:worklet-processor": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./transpile-javascript.ts",
+        "build:worklet-processor": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./scripts/transpile-worklet-processor.ts",
         "build": "npm run clean ; npm run build:worklet-processor && npm run build:dist",
         "clean": "rm -rf dist",
         "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",

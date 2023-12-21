@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022-2023 Sébastien Piquemal <sebpiq@protonmail.com>, Chris McCormick.
  *
- * This file is part of WebPd 
+ * This file is part of WebPd
  * (see https://github.com/sebpiq/WebPd).
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,9 +19,9 @@
  */
 
 import { IncomingMessage, OutgoingMessage } from './types'
-import _WebPdWorkletProcessorCode from './WebPdWorkletProcessor.generated'
-import AssemblyScriptWasmBindingsCode from '@webpd/compiler/dist/assemblyscript-wasm-bindings.iife'
-import JavaScriptBindingsCode from '@webpd/compiler/dist/javascript-bindings.iife'
+import WEB_PD_WORKLET_PROCESSOR_CODE from './assets/WebPdWorkletProcessor.js.txt'
+import ASSEMBLY_SCRIPT_WASM_BINDINGS_CODE from '@webpd/compiler/dist/assemblyscript-wasm-bindings.iife'
+import JAVA_SCRIPT_BINDINGS_CODE from '@webpd/compiler/dist/javascript-bindings.iife'
 import { addModule } from './utils'
 
 export type WebPdWorkletNodeMessageHandler = (
@@ -58,11 +58,11 @@ export default class WebPdWorkletNode extends AudioWorkletNode {
 
 // Concatenate WorkletProcessor code with the Wasm bindings it needs
 const WEBPD_WORKLET_PROCESSOR_CODE =
-    AssemblyScriptWasmBindingsCode +
+    ASSEMBLY_SCRIPT_WASM_BINDINGS_CODE +
     ';\n' +
-    JavaScriptBindingsCode +
+    JAVA_SCRIPT_BINDINGS_CODE +
     ';\n' +
-    _WebPdWorkletProcessorCode
+    WEB_PD_WORKLET_PROCESSOR_CODE
 
 export const registerWebPdWorkletNode = (context: AudioContext) => {
     return addModule(context, WEBPD_WORKLET_PROCESSOR_CODE)
