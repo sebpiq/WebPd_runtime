@@ -1,9 +1,7 @@
 {
     "extends": "./node_modules/@webpd/dev/tsconfig.json",
     "include": [
-        "src",
-        "@types/**/*.d.ts",
-        "*.ts",
-        "WebPdWorkletProcessor.d.ts",
+        "*.d.ts",
+        "./src/**/*.ts"
     ]
 }
