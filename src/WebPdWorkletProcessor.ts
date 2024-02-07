@@ -63,7 +63,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
             this.dspConfigured = true
         }
 
-        this.engine.loop(input, output)
+        this.engine.dspLoop(input, output)
         return true
     }
 
