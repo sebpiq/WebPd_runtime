@@ -56,7 +56,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 return true
             }
             this.settings.blockSize = output[0].length
-            this.engine.configure(
+            this.engine.initialize(
                 this.settings.sampleRate,
                 this.settings.blockSize
             )

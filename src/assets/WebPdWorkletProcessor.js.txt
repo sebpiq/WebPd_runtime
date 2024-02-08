@@ -44,7 +44,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 return true;
             }
             this.settings.blockSize = output[0].length;
-            this.engine.configure(this.settings.sampleRate, this.settings.blockSize);
+            this.engine.initialize(this.settings.sampleRate, this.settings.blockSize);
             this.dspConfigured = true;
         }
         this.engine.dspLoop(input, output);
