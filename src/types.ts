@@ -56,28 +56,28 @@ interface FsReadSoundFileResponse {
     type: 'fs'
     payload: {
         functionName: 'sendReadSoundFileResponse'
-        arguments: Parameters<Engine['fs']['sendReadSoundFileResponse']>
+        arguments: Parameters<Engine['globals']['fs']['sendReadSoundFileResponse']>
     }
 }
 interface FsWriteSoundFileResponse {
     type: 'fs'
     payload: {
         functionName: 'sendWriteSoundFileResponse'
-        arguments: Parameters<Engine['fs']['sendWriteSoundFileResponse']>
+        arguments: Parameters<Engine['globals']['fs']['sendWriteSoundFileResponse']>
     }
 }
 interface FsSoundStreamData {
     type: 'fs'
     payload: {
         functionName: 'sendSoundStreamData'
-        arguments: Parameters<Engine['fs']['sendSoundStreamData']>
+        arguments: Parameters<Engine['globals']['fs']['sendSoundStreamData']>
     }
 }
 interface FsSoundStreamClose {
     type: 'fs'
     payload: {
         functionName: 'closeSoundStream'
-        arguments: Parameters<Engine['fs']['closeSoundStream']>
+        arguments: Parameters<Engine['globals']['fs']['closeSoundStream']>
     }
 }
 interface DestroyMessage {
@@ -99,7 +99,7 @@ export interface FsOnReadSoundFile {
     type: 'fs'
     payload: {
         functionName: 'onReadSoundFile'
-        arguments: Parameters<Engine['fs']['onReadSoundFile']>
+        arguments: Parameters<Engine['globals']['fs']['onReadSoundFile']>
     }
 }
 
@@ -107,7 +107,7 @@ export interface FsOnWriteSoundFile {
     type: 'fs'
     payload: {
         functionName: 'onWriteSoundFile'
-        arguments: Parameters<Engine['fs']['onWriteSoundFile']>
+        arguments: Parameters<Engine['globals']['fs']['onWriteSoundFile']>
     }
 }
 
@@ -115,7 +115,7 @@ export interface FsOnOpenSoundReadStream {
     type: 'fs'
     payload: {
         functionName: 'onOpenSoundReadStream'
-        arguments: Parameters<Engine['fs']['onOpenSoundReadStream']>
+        arguments: Parameters<Engine['globals']['fs']['onOpenSoundReadStream']>
     }
 }
 
@@ -123,7 +123,7 @@ export interface FsOnOpenSoundWriteStream {
     type: 'fs'
     payload: {
         functionName: 'onOpenSoundWriteStream'
-        arguments: Parameters<Engine['fs']['onOpenSoundWriteStream']>
+        arguments: Parameters<Engine['globals']['fs']['onOpenSoundWriteStream']>
     }
 }
 
@@ -131,7 +131,7 @@ export interface FsOnSoundStreamData {
     type: 'fs'
     payload: {
         functionName: 'onSoundStreamData'
-        arguments: Parameters<Engine['fs']['onSoundStreamData']>
+        arguments: Parameters<Engine['globals']['fs']['onSoundStreamData']>
     }
 }
 
@@ -139,7 +139,7 @@ export interface FsOnCloseSoundStream {
     type: 'fs'
     payload: {
         functionName: 'onCloseSoundStream'
-        arguments: Parameters<Engine['fs']['onCloseSoundStream']>
+        arguments: Parameters<Engine['globals']['fs']['onCloseSoundStream']>
     }
 }
 
@@ -148,7 +148,7 @@ export interface FsSendSoundStreamDataReturn {
     payload: {
         functionName: 'sendSoundStreamData_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['sendSoundStreamData']>
+        returned: ReturnType<Engine['globals']['fs']['sendSoundStreamData']>
     }
 }
 
@@ -157,7 +157,7 @@ export interface FsCloseSoundStreamReturn {
     payload: {
         functionName: 'closeSoundStream_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['closeSoundStream']>
+        returned: ReturnType<Engine['globals']['fs']['closeSoundStream']>
     }
 }
 
@@ -166,7 +166,7 @@ export interface FsSendReadSoundFileResponseReturn {
     payload: {
         functionName: 'sendReadSoundFileResponse_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['sendReadSoundFileResponse']>
+        returned: ReturnType<Engine['globals']['fs']['sendReadSoundFileResponse']>
     }
 }
 
@@ -175,7 +175,7 @@ export interface FsSendWriteSoundFileResponseReturn {
     payload: {
         functionName: 'sendWriteSoundFileResponse_return'
         operationId: number
-        returned: ReturnType<Engine['fs']['sendWriteSoundFileResponse']>
+        returned: ReturnType<Engine['globals']['fs']['sendWriteSoundFileResponse']>
     }
 }
 

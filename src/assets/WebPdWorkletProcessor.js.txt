@@ -63,7 +63,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 this.engine.io.messageReceivers[message.payload.nodeId][message.payload.portletId](message.payload.message);
                 break;
             case 'fs':
-                const returned = this.engine.fs[message.payload.functionName].apply(null, message.payload.arguments);
+                const returned = this.engine.globals.fs[message.payload.functionName].apply(null, message.payload.arguments);
                 this.port.postMessage({
                     type: 'fs',
                     payload: {
@@ -89,19 +89,20 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
         this.setEngine(engine);
     }
     setEngine(engine) {
-        FS_CALLBACK_NAMES.forEach((functionName) => {
-            ;
-            engine.fs[functionName] = (...args) => {
-                // We don't use transferables, because that would imply reallocating each time new array in the engine.
-                this.port.postMessage({
-                    type: 'fs',
-                    payload: {
-                        functionName,
-                        arguments: args,
-                    },
-                });
-            };
-        });
+        if (engine.globals.fs) {
+            FS_CALLBACK_NAMES.forEach((functionName) => {
+                engine.globals.fs[functionName] = (...args) => {
+                    // We don't use transferables, because that would imply reallocating each time new array in the engine.
+                    this.port.postMessage({
+                        type: 'fs',
+                        payload: {
+                            functionName,
+                            arguments: args,
+                        },
+                    });
+                };
+            });
+        }
         this.engine = engine;
         this.dspConfigured = false;
     }

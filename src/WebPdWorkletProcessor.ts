@@ -30,7 +30,7 @@ const FS_CALLBACK_NAMES = [
     'onOpenSoundWriteStream',
     'onSoundStreamData',
     'onCloseSoundStream',
-]
+] as const
 
 class WasmWorkletProcessor extends AudioWorkletProcessor {
     private settings: Settings
@@ -87,7 +87,7 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 break
 
             case 'fs':
-                const returned = this.engine.fs[
+                const returned = this.engine.globals.fs[
                     message.payload.functionName
                 ].apply(null, message.payload.arguments)
                 this.port.postMessage({
@@ -122,18 +122,20 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
     }
 
     setEngine(engine: TypesForWorkletProcessor.Engine) {
-        FS_CALLBACK_NAMES.forEach((functionName) => {
-            ;(engine.fs as any)[functionName] = (...args: any) => {
-                // We don't use transferables, because that would imply reallocating each time new array in the engine.
-                this.port.postMessage({
-                    type: 'fs',
-                    payload: {
-                        functionName,
-                        arguments: args,
-                    },
-                })
-            }
-        })
+        if (engine.globals.fs) {
+            FS_CALLBACK_NAMES.forEach((functionName) => {
+                engine.globals.fs[functionName] = (...args: any) => {
+                    // We don't use transferables, because that would imply reallocating each time new array in the engine.
+                    this.port.postMessage({
+                        type: 'fs',
+                        payload: {
+                            functionName,
+                            arguments: args,
+                        },
+                    })
+                }
+            })
+        }
         this.engine = engine
         this.dspConfigured = false
     }
