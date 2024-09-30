@@ -29,7 +29,6 @@
     },
     "devDependencies": {
         "@rollup/plugin-typescript": "^10.0.1",
-        "@types/audioworklet": "^0.0.36",
         "@types/jest": "^29.2.5",
         "@webpd/compiler": "file:../WebPd_compiler",
         "@webpd/dev": "file:../WebPd_dev",

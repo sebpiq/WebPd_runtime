@@ -1,3 +1,6 @@
+/**
+ * This script transpiles the WorkletProcessor file to a JavaScript file.
+ */
 import ts from 'typescript'
 import { readFileSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
