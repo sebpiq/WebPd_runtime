@@ -179,6 +179,15 @@ export interface FsSendWriteSoundFileResponseReturn {
     }
 }
 
+export interface IoMessageSender {
+    type: 'io:messageSender'
+    payload: {
+        nodeId: string
+        portletId: string
+        message: Message
+    }
+}
+
 export type IncomingMessage =
     | FsOnReadSoundFile
     | FsOnWriteSoundFile
@@ -190,3 +199,4 @@ export type IncomingMessage =
     | FsCloseSoundStreamReturn
     | FsSendReadSoundFileResponseReturn
     | FsSendWriteSoundFileResponseReturn
+    | IoMessageSender

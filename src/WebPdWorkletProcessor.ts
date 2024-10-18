@@ -136,6 +136,22 @@ class WasmWorkletProcessor extends AudioWorkletProcessor {
                 }
             })
         }
+        Object.entries(engine.metadata.settings.io.messageSenders).forEach(
+            ([nodeId, { portletIds }]) => {
+                portletIds.forEach((portletId) => {
+                    engine.io.messageSenders[nodeId][portletId] = (message) => {
+                        this.port.postMessage({
+                            type: 'io:messageSender',
+                            payload: {
+                                nodeId,
+                                portletId,
+                                message,
+                            },
+                        })
+                    }
+                })
+            }
+        )
         this.engine = engine
         this.dspConfigured = false
     }

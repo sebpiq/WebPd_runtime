@@ -32,10 +32,10 @@ export default async (
     settings: FsHandlerSettings
 ) => {
     const message = messageEvent.data
-    const { payload } = message
     if (message.type !== 'fs') {
         throw new Error(`Unknown message type from node ${message.type}`)
     }
+    const { payload } = message
 
     if (
         payload.functionName === 'onReadSoundFile' ||
