@@ -22,7 +22,7 @@ import {
     FS_OPERATION_FAILURE,
     FS_OPERATION_SUCCESS,
 } from '@webpd/compiler'
-import { Message } from '@webpd/compiler/src/run/types'
+import { Message } from '@webpd/compiler'
 
 export type FloatArrayType = typeof Float32Array | typeof Float64Array
 

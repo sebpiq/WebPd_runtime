@@ -7,6 +7,10 @@
     "type": "module",
     "license": "LGPL-3.0",
     "author": "Sébastien Piquemal",
+    "private": false,
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
         "build:dist": "npx rollup --config configs/dist.rollup.mjs",
@@ -14,7 +18,7 @@
         "build": "npm run clean ; npm run build:worklet-processor && npm run build:dist",
         "clean": "rm -rf dist",
         "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
-        "eslint": "npm explore @webpd/dev -- npm run eslint $(pwd)/src"
+        "postpublish": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release $(node -p \"require('./package.json').version\")\""
     },
     "repository": {
         "type": "git",
@@ -28,13 +32,7 @@
         "fetch-retry": "^5.0.3"
     },
     "devDependencies": {
-        "@rollup/plugin-typescript": "^10.0.1",
-        "@types/jest": "^29.2.5",
-        "@webpd/compiler": "file:../WebPd_compiler",
-        "@webpd/dev": "file:../WebPd_dev",
-        "rollup": "^3.7.0",
-        "rollup-plugin-string": "^3.0.0",
-        "ts-node": "^10.9.1",
-        "tslib": "^2.4.0"
+        "@webpd/compiler": "^0.1.0",
+        "@webpd/dev": "github:sebpiq/WebPd_dev#v1"
     }
 }

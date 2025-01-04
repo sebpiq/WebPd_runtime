@@ -1,11 +1,6 @@
-# WebPd runtime
+WebPd JS/Wasm AudioWorklet runtime
+=====================================
 
-More docs coming here soon ... 
+An AudioWorklet runtime for code compiled with the [WebPd compiler](https://github.com/sebpiq/WebPd_compiler).
 
-Meanwhile you can go back there : https://github.com/sebpiq/WebPd
-
-## Notes
-
-Problems with bitDepth 32. Probably because of float roundings of Wasm module generated with AssemblyScript.
-
-Problem with bundling the ASC Wasm bindings. A solution would have been to import the module from the worklet with a simple ES `import` statement, but that isn't possible in Firefox (see ticket : https://bugzilla.mozilla.org/show_bug.cgi?id=1572644). For now we must therefore use a module built as an iife and concatenate the code with the worklet code.
+This is part of the [WebPd](https://github.com/sebpiq/WebPd) project, but can also be used as a standalone library (although for now you'll have to read the source).
