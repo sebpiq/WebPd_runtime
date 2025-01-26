@@ -1,8 +1,8 @@
 {
     "name": "@webpd/runtime",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "Runtime environment for WebPd",
-    "main": "./dist/WebPd_runtime/src/index.js",
+    "main": "./dist/src/index.js",
     "types": "./dist/src/index.d.ts",
     "type": "module",
     "license": "LGPL-3.0",
@@ -18,7 +18,7 @@
         "build": "npm run clean ; npm run build:worklet-processor && npm run build:dist",
         "clean": "rm -rf dist",
         "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
-        "postpublish": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release $(node -p \"require('./package.json').version\")\""
+        "postpublish": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release $(node -p \"require('./package.json').version\")\" ; git push --tags"
     },
     "repository": {
         "type": "git",
@@ -32,7 +32,7 @@
         "fetch-retry": "^5.0.3"
     },
     "devDependencies": {
-        "@webpd/compiler": "^0.1.0",
+        "@webpd/compiler": "^0.1.1",
         "@webpd/dev": "github:sebpiq/WebPd_dev#v1"
     }
 }
