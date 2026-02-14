@@ -2,9 +2,10 @@
     "name": "@webpd/runtime",
     "version": "0.1.2",
     "description": "Runtime environment for WebPd",
-    "main": "./dist/src/index.js",
+    "main": "./dist/index.js",
     "types": "./dist/src/index.d.ts",
     "type": "module",
+    "sideEffects": false,
     "license": "LGPL-3.0",
     "author": "Sébastien Piquemal",
     "private": false,
@@ -15,10 +16,14 @@
         "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' npx jest --config node_modules/@webpd/dev/configs/jest.js",
         "build:dist": "npx rollup --config configs/dist.rollup.mjs",
         "build:worklet-processor": "node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings ./scripts/transpile-worklet-processor.ts",
-        "build": "npm run clean ; npm run build:worklet-processor && npm run build:dist",
+        "build": "npm run clean && npm run build:worklet-processor && npm run build:dist",
+        "build:dev:full": "npm run build:dev:deps && npm run link:local && npm run build",
+        "build:dev:deps": "cd ../WebPd_compiler && npm run build:dev:full && cd ../WebPd_runtime",
+        "link:local": "cd ../WebPd_compiler && npm link && cd ../WebPd_runtime && npm link @webpd/compiler && cd ../WebPd_runtime",
+        "unlink:local": "npm unlink @webpd/compiler && cd ../WebPd_compiler && npm unlink && cd ../WebPd_runtime",
         "clean": "rm -rf dist",
         "prettier": "npm explore @webpd/dev -- npm run prettier $(pwd)/src",
-        "postpublish": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release $(node -p \"require('./package.json').version\")\" ; git push --tags"
+        "postpublish": "git tag -a v$(node -p \"require('./package.json').version\") -m \"Release $(node -p \"require('./package.json').version\")\" && git push --tags"
     },
     "repository": {
         "type": "git",
@@ -33,6 +38,6 @@
     },
     "devDependencies": {
         "@webpd/compiler": "^0.1.1",
-        "@webpd/dev": "github:sebpiq/WebPd_dev#v1"
+        "@webpd/dev": "github:sebpiq/WebPd_dev#v2"
     }
 }
